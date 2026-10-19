@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatSpace</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1120;color:#f1f5f9;font-family:Arial,sans-serif}
+.app{max-width:1050px;height:94vh;margin:3vh auto;display:flex;background:#111b2e;border:1px solid #29364b;border-radius:16px;overflow:hidden}
+aside{width:240px;padding:22px;background:#0f1728;border-right:1px solid #29364b}
+.logo{font-size:24px;font-weight:bold;margin-bottom:30px}
+.accent{color:#38bdf8}
+#userCount{color:#94a3b8;font-size:13px;margin-bottom:12px}
+#users{padding:0;list-style:none}
+#users li{padding:10px 4px;border-bottom:1px solid #243148;overflow-wrap:anywhere}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:8px}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+header{padding:18px;border-bottom:1px solid #29364b}
+header h2{margin:0 0 6px;font-size:19px}
+.muted{color:#94a3b8;font-size:13px}
+#messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.message{max-width:82%;align-self:flex-start}
+.message.mine{align-self:flex-end}
+.meta{font-size:12px;color:#94a3b8;margin:0 4px 5px}
+.bubble{padding:12px 14px;background:#25344c;border-radius:5px 14px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.mine .bubble{background:#087e8b;border-radius:14px 5px 14px 14px}
+form{display:flex;gap:8px;padding:14px;border-top:1px solid #29364b}
+input{min-width:0;flex:1;padding:13px;background:#1b2940;border:1px solid #34445e;border-radius:10px;color:white;font-size:15px}
+button{border:0;border-radius:10px;padding:0 18px;background:#38bdf8;color:#082032;font-weight:bold;cursor:pointer}
+@media(max-width:600px){.app{height:100vh;margin:0;border-radius:0}aside{width:125px;padding:12px}.logo{font-size:18px}header{padding:14px}#messages{padding:12px}form{padding:10px}button{padding:0 12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="logo">Chat<span class="accent">Space</span></div>
+  <div id="userCount">Online users: 0</div>
+  <ul id="users"></ul>
+  <p class="muted">Live community chat</p>
+</aside>
+<main>
+  <header>
+    <h2>General Chat</h2>
+    <div class="muted" id="connection">Connecting...</div>
+  </header>
+  <div id="messages" aria-live="polite"></div>
+  <form id="form">
+    <input id="input" maxlength="1000" placeholder="Type a message..." autocomplete="off" required>
+    <button type="submit">Send ➤</button>
+  </form>
+</main>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket=io();
+socket.on("chat history", (history) => {
+  messages.innerHTML = "";
+
+  if (Array.isArray(history)) {
+    history.forEach((message) => {
+      showMessage(message);
+    });
+  }
+});
+const form=document.getElementById("form");
+const input=document.getElementById("input");
+const messages=document.getElementById("messages");
+const users=document.getElementById("users");
+const userCount=document.getElementById("userCount");
+const connection=document.getElementById("connection");
+let selectedUserId = null;
+let selectedUsername = null;
+let username = localStorage.getItem("chatUsername");
+
+if (!username) {
+  username = prompt("Enter your username") || "Guest";
+  username = username.trim() || "Guest";
+  localStorage.setItem("chatUsername", username);
+}
+
+socket.on("connect",()=>{
+  connection.textContent="Connected";
+  socket.emit("set username",username);
+});
+socket.on("disconnect",()=>connection.textContent="Reconnecting...");
+
+
+socket.on("online users", list => {
+  users.replaceChildren();
+  userCount.textContent = "Online users: " + list.length;
+
+  list.forEach(user => {
+    const li = document.createElement("li");
+    const dot = document.createElement("span");
+    dot.className = "dot";
+
+    const name = user.username;
+    li.append(
+      dot,
+      document.createTextNode(name + (name === username ? " (you)" : ""))
+    );
+
+    if (user.id !== socket.id) {
+      li.style.cursor = "pointer";
+      li.title = "Click to start private chat";
+
+      li.addEventListener("click", () => {
+        selectedUserId = user.id;
+        selectedUsername = name;
+        connection.textContent = "Private chat with " + name;
+      });
+    }
+
+    users.appendChild(li);
+  });
+});
+
+  function showMessage(data) {
+    if(!data||typeof data.text!=="string")return;
+  const item=document.createElement("div");
+  item.className="msessage"+(data.username===username?" mine":"");
+  const meta=document.createElement("div");
+  meta.className="meta";
+  meta.textContent=(data.username||"Guest")+" · "+(data.time||"");
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  bubble.textContent=data.text;
+  item.append(meta,bubble);
+  messages.appendChild(item);
+  messages.scrollTop=messages.scrollHeight;
+}
+
+socket.on("chat message",showMessage);
+
+socket.on("private message", message => {
+  const label = document.createElement("div");
+  label.textContent =
+    "🔒 Private message from " + message.from +
+    " (" + message.time + "): " + message.text;
+
+  messages.appendChild(label);
+  messages.scrollTop = messages.scrollHeight;
+});
+
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const text = input.value.trim();
+  if (!text || !socket.connected) return;
+
+  if (selectedUserId) {
+    socket.emit("private message", {
+      to: selectedUserId,
+      text: text
+    });
+  } else {
+    socket.emit("chat message", { text });
+  }
+
+  input.value = "";
+  input.focus();
+});
+
+</script>
+</body>
+</html>
