@@ -10,7 +10,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.static(__dirname));
-
+app.use(express.static(__dirname + "/public"));
 // Agar teri HTML file ka naam index.html hai,
 // toh chat.html ko index.html kar dena.
 app.get("/", (req, res) => {
