@@ -1,11 +1,25 @@
 
+require("dotenv").config();
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
 
+const {
+  router: authRouter,
+  sessionMiddleware,
+  requireAuth,
+  db
+} = require("./auth");
+
 const app = express();
+
+app.use(express.json({ limit: "10kb" }));
+app.use(sessionMiddleware);
+app.use("/api/auth", authRouter);
+
 const server = http.createServer(app);
 const io = new Server(server);
 
