@@ -1,10 +1,11 @@
+
 {
   "name": "chatting-site",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Chatting website",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +13,10 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.3.0",
-    "socket.io": "^4.8.4"
+    "socket.io": "^4.8.4",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.0.0",
+    "express-session": "^1.18.2",
+    "nodemailer": "^7.0.3"
   }
 }
