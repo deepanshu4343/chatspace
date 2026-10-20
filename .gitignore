@@ -1,0 +1,5 @@
+.env
+*.env
+users.db
+messages.json
+node_modules/
