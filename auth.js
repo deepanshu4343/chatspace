@@ -356,5 +356,11 @@ function requireAuth(req, res, next) {
   }
   next();
 }
+router.get("/me", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Please log in." });
+  }
 
+  res.json({ user: req.session.user });
+});
 module.exports = { router, sessionMiddleware, requireAuth, db };
