@@ -169,7 +169,7 @@ router.post("/signup", async (req, res) => {
       Date.now() + 30 * 60 * 1000
     );
 
-    const link = `${baseUrl()}/?verify=${token}`;
+    const link = `${baseUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
     try {
       await sendEmail(
