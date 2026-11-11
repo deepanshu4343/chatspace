@@ -27,6 +27,9 @@ app.use(express.static(__dirname));
 app.use(express.static(__dirname + "/public"));
 // Agar teri HTML file ka naam index.html hai,
 // toh chat.html ko index.html kar dena.
+app.get("/chat", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "chat.html"));
+});
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "auth.html"));
 });
