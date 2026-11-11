@@ -243,15 +243,20 @@ router.post("/login", async (req, res) => {
       FROM users WHERE username = ?
     `).get(username);
 
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-      return res.status(401).json({ error: "Username ya password galat hai." });
-    }
+if (!user) {
+  console.log("LOGIN DEBUG: User not found");
+  return res.status(401).json({ error: "Username ya password galat hai." });
+}
 
-    if (!user.email_verified) {
-      return res.status(403).json({
-        error: "Pehle apne email ka verification link open karo."
-      });
-    }
+const passwordMatches = await bcrypt.compare(password, user.password_hash);
+console.log("LOGIN DEBUG:", {
+  userFound: true,
+  passwordMatches
+});
+
+if (!passwordMatches) {
+  return res.status(401).json({ error: "Username ya password galat hai." });
+}
 
     await createLoginSession(req, user);
     res.json({ user: { id: user.id, username: user.username } });
