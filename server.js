@@ -15,7 +15,7 @@ const {
 } = require("./auth");
 
 const app = express();
-
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "10kb" }));
 app.use(sessionMiddleware);
 app.use("/api/auth", authRouter);
