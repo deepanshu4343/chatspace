@@ -5,156 +5,752 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChatSpace</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0b1120;color:#f1f5f9;font-family:Arial,sans-serif}
-.app{max-width:1050px;height:94vh;margin:3vh auto;display:flex;background:#111b2e;border:1px solid #29364b;border-radius:16px;overflow:hidden}
-aside{width:240px;padding:22px;background:#0f1728;border-right:1px solid #29364b}
-.logo{font-size:24px;font-weight:bold;margin-bottom:30px}
-.accent{color:#38bdf8}
-#userCount{color:#94a3b8;font-size:13px;margin-bottom:12px}
-#users{padding:0;list-style:none}
-#users li{padding:10px 4px;border-bottom:1px solid #243148;overflow-wrap:anywhere}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:8px}
-main{flex:1;min-width:0;display:flex;flex-direction:column}
-header{padding:18px;border-bottom:1px solid #29364b}
-header h2{margin:0 0 6px;font-size:19px}
-.muted{color:#94a3b8;font-size:13px}
-#messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
-.message{max-width:82%;align-self:flex-start}
-.message.mine{align-self:flex-end}
-.meta{font-size:12px;color:#94a3b8;margin:0 4px 5px}
-.bubble{padding:12px 14px;background:#25344c;border-radius:5px 14px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.mine .bubble{background:#087e8b;border-radius:14px 5px 14px 14px}
-form{display:flex;gap:8px;padding:14px;border-top:1px solid #29364b}
-input{min-width:0;flex:1;padding:13px;background:#1b2940;border:1px solid #34445e;border-radius:10px;color:white;font-size:15px}
-button{border:0;border-radius:10px;padding:0 18px;background:#38bdf8;color:#082032;font-weight:bold;cursor:pointer}
-@media(max-width:600px){.app{height:100vh;margin:0;border-radius:0}aside{width:125px;padding:12px}.logo{font-size:18px}header{padding:14px}#messages{padding:12px}form{padding:10px}button{padding:0 12px}}
+:root {
+  --bg: #080f18;
+  --panel: #111b27;
+  --sidebar: #101923;
+  --border: #253443;
+  --accent: #25d5b2;
+  --text: #e8f0f5;
+  --muted: #8b9ba9;
+  --bubble: #202f3c;
+  --mine: #075e50;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+button, input { font: inherit; }
+
+.app {
+  display: flex;
+  max-width: 1450px;
+  height: 100vh;
+  margin: auto;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+
+aside {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.side-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  margin-bottom: 18px;
+}
+
+.accent { color: var(--accent); }
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: #23483f;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  color: #b4ffe9;
+  flex-shrink: 0;
+}
+
+.profile-info { min-width: 0; }
+
+.profile-name {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.logout {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.search-wrap { padding: 13px; }
+
+.search {
+  width: 100%;
+  padding: 12px;
+  background: #202c38;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: white;
+  outline: none;
+}
+
+.contact-heading {
+  padding: 8px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#contacts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #1b2935;
+  cursor: pointer;
+}
+
+.contact:hover, .contact.active {
+  background: #1b2b37;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.contact-status {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.online-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #35d58b;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.unread {
+  background: var(--accent);
+  color: #06241e;
+  border-radius: 20px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* CHAT AREA */
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background:
+    radial-gradient(circle at center, #142431 0%, #101c27 80%);
+}
+
+header {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 12px;
+  background: #111d28;
+  border-bottom: 1px solid var(--border);
+}
+
+#chatTitle {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#chatStatus {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.back {
+  display: none;
+  background: transparent;
+  border: 0;
+  color: white;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  margin: auto;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.message {
+  max-width: min(75%, 600px);
+  align-self: flex-start;
+}
+
+.message.mine { align-self: flex-end; }
+
+.meta {
+  color: #a5b4c0;
+  font-size: 11px;
+  margin: 0 5px 5px;
+}
+
+.bubble {
+  padding: 11px 14px;
+  border-radius: 5px 14px 14px;
+  background: var(--bubble);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.message.mine .bubble {
+  background: var(--mine);
+  border-radius: 14px 5px 14px 14px;
+}
+
+#typing {
+  min-height: 22px;
+  padding: 0 22px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.composer {
+  padding: 13px;
+  display: flex;
+  gap: 10px;
+  background: #111d28;
+  border-top: 1px solid var(--border);
+}
+
+#input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  background: #202c38;
+  color: white;
+  outline: none;
+}
+
+#send {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #06241e;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#send:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media(max-width:650px) {
+  .app { position: relative; }
+
+  aside {
+    width: 100%;
+    border-right: 0;
+  }
+
+  main {
+    display: none;
+    width: 100%;
+  }
+
+  .app.chat-open aside { display: none; }
+  .app.chat-open main { display: flex; }
+
+  .back { display: block; }
+
+  #messages { padding: 15px; }
+
+  .message { max-width: 88%; }
+
+  .side-header { padding: 15px; }
+}
 </style>
 </head>
+
 <body>
-<div class="app">
+
+<div class="app" id="app">
+
 <aside>
-  <div class="logo">Chat<span class="accent">Space</span></div>
-  <div id="userCount">Online users: 0</div>
-  <ul id="users"></ul>
-  <p class="muted">Live community chat</p>
+  <div class="side-header">
+
+    <div class="logo">
+      Chat<span class="accent">Space</span>
+    </div>
+
+    <div class="profile">
+      <div class="avatar" id="myAvatar">?</div>
+
+      <div class="profile-info">
+        <div class="profile-name" id="myName">Loading...</div>
+        <div class="status">● Online</div>
+      </div>
+
+      <button class="logout" id="logout">Logout</button>
+    </div>
+
+  </div>
+
+  <div class="search-wrap">
+    <input
+      class="search"
+      id="search"
+      placeholder="Search online contacts..."
+      autocomplete="off"
+    >
+  </div>
+
+  <div class="contact-heading">Conversations</div>
+
+  <ul id="contacts">
+    <li class="contact">Loading contacts...</li>
+  </ul>
 </aside>
+
 <main>
+
   <header>
-    <h2>General Chat</h2>
-    <div class="muted" id="connection">Connecting...</div>
+    <button class="back" id="back">←</button>
+
+    <div class="avatar" id="chatAvatar">C</div>
+
+    <div>
+      <div id="chatTitle">General Chat</div>
+      <div id="chatStatus">Community conversation</div>
+    </div>
   </header>
-  <div id="messages" aria-live="polite"></div>
-  <form id="form">
-    <input id="input" maxlength="1000" placeholder="Type a message..." autocomplete="off" required>
-    <button type="submit">Send ➤</button>
+
+  <div id="messages" aria-live="polite">
+    <div class="empty">
+      Welcome to ChatSpace!<br>
+      Start a conversation.
+    </div>
+  </div>
+
+  <div id="typing"></div>
+
+  <form class="composer" id="form">
+    <input
+      id="input"
+      maxlength="1000"
+      placeholder="Type a message..."
+      autocomplete="off"
+      required
+    >
+
+    <button id="send" type="submit">➤</button>
   </form>
+
 </main>
+
 </div>
+
 <script src="/socket.io/socket.io.js"></script>
+
 <script>
-const socket=io();
-socket.on("chat history", (history) => {
-  messages.innerHTML = "";
+const app = document.getElementById("app");
+const contacts = document.getElementById("contacts");
+const messages = document.getElementById("messages");
+const input = document.getElementById("input");
+const form = document.getElementById("form");
+const search = document.getElementById("search");
 
-  if (Array.isArray(history)) {
-    history.forEach((message) => {
-      showMessage(message);
-    });
-  }
-});
-const form=document.getElementById("form");
-const input=document.getElementById("input");
-const messages=document.getElementById("messages");
-const users=document.getElementById("users");
-const userCount=document.getElementById("userCount");
-const connection=document.getElementById("connection");
-let selectedUserId = null;
+const myName = document.getElementById("myName");
+const myAvatar = document.getElementById("myAvatar");
+const chatTitle = document.getElementById("chatTitle");
+const chatStatus = document.getElementById("chatStatus");
+const chatAvatar = document.getElementById("chatAvatar");
+const typing = document.getElementById("typing");
+const sendButton = document.getElementById("send");
+
+let currentUser = null;
+let socket = null;
 let selectedUsername = null;
-let username = localStorage.getItem("chatUsername");
+let onlineList = [];
+let unread = {};
+let typingTimer = null;
+let historyRequest = 0;
 
-if (!username) {
-  username = prompt("Enter your username") || "Guest";
-  username = username.trim() || "Guest";
-  localStorage.setItem("chatUsername", username);
+function avatarLetter(name) {
+  return (name || "?").charAt(0).toUpperCase();
 }
 
-socket.on("connect",()=>{
-  connection.textContent="Connected";
-  socket.emit("set username",username);
-});
-socket.on("disconnect",()=>connection.textContent="Reconnecting...");
+function scrollBottom() {
+  messages.scrollTop = messages.scrollHeight;
+}
 
+function clearMessages() {
+  messages.replaceChildren();
+}
 
-socket.on("online users", list => {
-  users.replaceChildren();
-  userCount.textContent = "Online users: " + list.length;
+function showEmpty(text) {
+  clearMessages();
 
-  list.forEach(user => {
+  const div = document.createElement("div");
+  div.className = "empty";
+  div.textContent = text;
+
+  messages.appendChild(div);
+}
+
+function showMessage(data, mine) {
+  if (!data || typeof data.text !== "string") return;
+
+  const item = document.createElement("div");
+  item.className = "message" + (mine ? " mine" : "");
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+
+  meta.textContent =
+    (data.username || data.from || "User") +
+    " · " + (data.time || "");
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = data.text;
+
+  item.append(meta, bubble);
+  messages.appendChild(item);
+
+  scrollBottom();
+}
+
+function renderContacts() {
+  contacts.replaceChildren();
+
+  const query = search.value.toLowerCase();
+
+  const filtered = onlineList.filter(user =>
+    user.id !== String(currentUser.id) &&
+    user.username.toLowerCase().includes(query)
+  );
+
+  filtered.forEach(user => {
     const li = document.createElement("li");
-    const dot = document.createElement("span");
-    dot.className = "dot";
+    li.className = "contact";
 
-    const name = user.username;
-    li.append(
-      dot,
-      document.createTextNode(name + (name === username ? " (you)" : ""))
-    );
-
-    if (user.id !== socket.id) {
-      li.style.cursor = "pointer";
-      li.title = "Click to start private chat";
-
-      li.addEventListener("click", () => {
-        selectedUserId = user.id;
-        selectedUsername = name;
-        connection.textContent = "Private chat with " + name;
-      });
+    if (selectedUsername === user.username) {
+      li.classList.add("active");
     }
 
-    users.appendChild(li);
-  });
-});
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.textContent = avatarLetter(user.username);
 
-  function showMessage(data) {
-    if(!data||typeof data.text!=="string")return;
-  const item=document.createElement("div");
-  item.className="msessage"+(data.username===username?" mine":"");
-  const meta=document.createElement("div");
-  meta.className="meta";
-  meta.textContent=(data.username||"Guest")+" · "+(data.time||"");
-  const bubble=document.createElement("div");
-  bubble.className="bubble";
-  bubble.textContent=data.text;
-  item.append(meta,bubble);
-  messages.appendChild(item);
-  messages.scrollTop=messages.scrollHeight;
+    const info = document.createElement("div");
+    info.className = "contact-info";
+
+    const name = document.createElement("div");
+    name.className = "contact-name";
+    name.textContent = user.username;
+
+    const status = document.createElement("div");
+    status.className = "contact-status";
+    status.textContent = "Online";
+
+    info.append(name, status);
+    li.append(avatar, info);
+
+    if (unread[user.username]) {
+      const badge = document.createElement("span");
+      badge.className = "unread";
+      badge.textContent = unread[user.username];
+
+      li.appendChild(badge);
+    }
+
+    const dot = document.createElement("span");
+    dot.className = "online-dot";
+    li.appendChild(dot);
+
+    li.addEventListener("click", () => openPrivateChat(user.username));
+
+    contacts.appendChild(li);
+  });
+
+  if (!filtered.length) {
+    const li = document.createElement("li");
+    li.className = "contact";
+    li.textContent = "No online contacts found.";
+    contacts.appendChild(li);
+  }
 }
 
-socket.on("chat message",showMessage);
+function openGeneralChat() {
+  historyRequest++;
 
-socket.on("private message", message => {
-  const label = document.createElement("div");
-  label.textContent =
-    "🔒 Private message from " + message.from +
-    " (" + message.time + "): " + message.text;
+  selectedUsername = null;
+  typing.textContent = "";
 
-  messages.appendChild(label);
-  messages.scrollTop = messages.scrollHeight;
-});
+  document.querySelectorAll(".contact").forEach(el =>
+    el.classList.remove("active")
+  );
 
+  chatTitle.textContent = "General Chat";
+  chatAvatar.textContent = "C";
+  chatStatus.textContent = "Community conversation";
+
+  app.classList.add("chat-open");
+
+  if (socket) socket.emit("stop typing", {});
+
+  socket.emit("chat history request");
+  showEmpty("Welcome to ChatSpace!");
+
+  // The server sends chat history on connection.
+  // Public messages received after connection are shown normally.
+}
+
+function openPrivateChat(username) {
+  selectedUsername = username;
+  unread[username] = 0;
+
+  historyRequest++;
+
+  const requestNumber = historyRequest;
+
+  chatTitle.textContent = username;
+  chatAvatar.textContent = avatarLetter(username);
+  chatStatus.textContent = "Online";
+
+  typing.textContent = "";
+  app.classList.add("chat-open");
+
+  renderContacts();
+
+  showEmpty("Loading conversation...");
+
+  socket.emit("get private history", { username });
+
+  // Ignore responses for conversations that are no longer selected.
+  window.currentHistoryRequest = requestNumber;
+}
+
+function handlePrivateHistory(data) {
+  if (!data || data.username !== selectedUsername) return;
+
+  clearMessages();
+
+  if (!Array.isArray(data.messages) || !data.messages.length) {
+    showEmpty("No messages yet. Say hello!");
+    return;
+  }
+
+  data.messages.forEach(message => {
+    showMessage(message, message.mine === true);
+  });
+}
+
+function handlePrivateMessage(message) {
+  if (!message || typeof message.text !== "string") return;
+
+  if (selectedUsername === message.from) {
+    showMessage(message, false);
+  } else {
+    unread[message.from] = (unread[message.from] || 0) + 1;
+    renderContacts();
+  }
+}
+
+function handleSentMessage(message) {
+  if (!message || typeof message.text !== "string") return;
+
+  if (selectedUsername === message.from) {
+    showMessage(message, true);
+  }
+}
+
+async function start() {
+  try {
+    const response = await fetch("/api/auth/me", {
+      credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+      window.location.href = "/";
+      return;
+    }
+
+    const data = await response.json();
+
+    currentUser = data.user;
+
+    myName.textContent = currentUser.username;
+    myAvatar.textContent = avatarLetter(currentUser.username);
+
+    socket = io({
+      withCredentials: true
+    });
+
+    socket.on("connect", () => {
+      chatStatus.textContent = selectedUsername
+        ? "Online"
+        : "Community conversation";
+
+      sendButton.disabled = false;
+    });
+
+    socket.on("connect_error", error => {
+      chatStatus.textContent = "Connection error: " + error.message;
+      sendButton.disabled = true;
+    });
+
+    socket.on("disconnect", () => {
+      chatStatus.textContent = "Reconnecting...";
+      sendButton.disabled = true;
+    });
+
+    socket.on("chat history", history => {
+      if (!Array.isArray(history)) return;
+
+      if (selectedUsername === null) {
+        clearMessages();
+
+        if (!history.length) {
+          showEmpty("Welcome! Start the conversation.");
+        } else {
+          history.forEach(message => {
+            showMessage(
+              message,
+              message.username === currentUser.username
+            );
+          });
+        }
+      }
+    });
+
+    socket.on("chat message", message => {
+      if (selectedUsername === null) {
+        showMessage(
+          message,
+          message.username === currentUser.username
+        );
+      }
+    });
+
+    socket.on("online users", list => {
+      onlineList = Array.isArray(list) ? list : [];
+      renderContacts();
+
+      if (selectedUsername) {
+        const isOnline = onlineList.some(
+          user => user.username === selectedUsername
+        );
+
+        chatStatus.textContent = isOnline
+          ? "Online"
+          : "Offline";
+      }
+    });
+
+    socket.on("private history", handlePrivateHistory);
+    socket.on("private message", handlePrivateMessage);
+    socket.on("private message sent", handleSentMessage);
+
+    socket.on("private message error", data => {
+      alert(data?.error || "Private message failed.");
+    });
+
+    socket.on("user typing", data => {
+      if (data?.username === selectedUsername) {
+        typing.textContent = data.username + " is typing...";
+      }
+    });
+
+    socket.on("user stopped typing", data => {
+      if (data?.username === selectedUsername) {
+        typing.textContent = "";
+      }
+    });
+
+    sendButton.disabled = true;
+
+  } catch (error) {
+    console.error(error);
+    chatStatus.textContent = "Could not load your account.";
+  }
+}
 
 form.addEventListener("submit", event => {
   event.preventDefault();
 
   const text = input.value.trim();
-  if (!text || !socket.connected) return;
 
-  if (selectedUserId) {
+  if (!text || !socket?.connected) return;
+
+  if (selectedUsername) {
+    socket.emit("stop typing", { to: selectedUsername });
+
     socket.emit("private message", {
-      to: selectedUserId,
-      text: text
+      to: selectedUsername,
+      text
     });
   } else {
     socket.emit("chat message", { text });
@@ -164,6 +760,41 @@ form.addEventListener("submit", event => {
   input.focus();
 });
 
+input.addEventListener("input", () => {
+  if (!selectedUsername || !socket?.connected) return;
+
+  socket.emit("typing", { to: selectedUsername });
+
+  clearTimeout(typingTimer);
+
+  typingTimer = setTimeout(() => {
+    socket.emit("stop typing", { to: selectedUsername });
+  }, 1200);
+});
+
+search.addEventListener("input", renderContacts);
+
+document.getElementById("back").addEventListener("click", () => {
+  app.classList.remove("chat-open");
+});
+
+document.getElementById("logout").addEventListener("click", async () => {
+  if (!confirm("Are you sure you want to log out?")) return;
+
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+
+    window.location.href = "/";
+  } catch (error) {
+    alert("Logout failed. Please try again.");
+  }
+});
+
+start();
 </script>
+
 </body>
 </html>
