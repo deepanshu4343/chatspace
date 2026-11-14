@@ -3,9 +3,9 @@ require("dotenv").config();
 
 const express = require("express");
 const http = require("http");
-const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
+const { Server } = require("socket.io");
 
 const {
   router: authRouter,
@@ -14,15 +14,18 @@ const {
   db
 } = require("./auth");
 
-const app = express();
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is missing from Environment Variables");
+}
 
+const app = express();
 app.set("trust proxy", 1);
 
 app.use(express.json({ limit: "10kb" }));
 app.use(sessionMiddleware);
 app.use("/api/auth", authRouter);
 
-// Serve public assets only. Do not expose server files or the database.
+// Only expose the public assets folder.
 app.use("/public", express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -34,23 +37,47 @@ app.get("/chat", requireAuth, (req, res) => {
 });
 
 const server = http.createServer(app);
-
 const io = new Server(server);
 
-// Attach the existing login session to Socket.IO.
+// Use the same Express session for Socket.IO.
+io.engine.use(sessionMiddleware);
+
 io.use((socket, next) => {
-  sessionMiddleware(socket.request, {}, (error) => {
-    if (error) return next(error);
+  const account = socket.request.session?.user;
 
-    if (!socket.request.session?.user) {
-      return next(new Error("Please log in first."));
-    }
+  if (!account?.id) {
+    return next(new Error("Please log in first."));
+  }
 
-    next();
-  });
+  const user = db.prepare(
+    "SELECT id, username FROM users WHERE id = ?"
+  ).get(account.id);
+
+  if (!user) {
+    return next(new Error("Account not found."));
+  }
+
+  socket.user = user;
+  next();
 });
 
-// Public message history
+// Private message database.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS private_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    recipient_id INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS private_messages_conversation
+  ON private_messages(sender_id, recipient_id, id)
+`);
+
+// Public message history.
 const historyFile = path.join(__dirname, "messages.json");
 let messages = [];
 
@@ -79,44 +106,7 @@ function saveMessages() {
   }
 }
 
-// Private messages are stored in the existing SQLite database.
-db.exec(`
-  CREATE TABLE IF NOT EXISTS private_messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sender_id INTEGER NOT NULL,
-    recipient_id INTEGER NOT NULL,
-    text TEXT NOT NULL,
-    created_at INTEGER NOT NULL
-  )
-`);
-
-db.exec(`
-  CREATE INDEX IF NOT EXISTS private_messages_users
-  ON private_messages(sender_id, recipient_id, id)
-`);
-
-// Each socket belongs to an authenticated account.
 const onlineUsers = new Map();
-
-function getOnlineUsers() {
-  const uniqueUsers = new Map();
-
-  for (const [socketId, user] of onlineUsers.entries()) {
-    if (!uniqueUsers.has(user.id)) {
-      uniqueUsers.set(user.id, {
-        id: socketId,
-        userId: user.id,
-        username: user.username
-      });
-    }
-  }
-
-  return Array.from(uniqueUsers.values());
-}
-
-function sendOnlineUsers() {
-  io.emit("online users", getOnlineUsers());
-}
 
 function formatTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString("en-IN", {
@@ -125,27 +115,53 @@ function formatTime(timestamp) {
   });
 }
 
+function getOnlineUsers() {
+  const users = new Map();
+
+  for (const user of onlineUsers.values()) {
+    users.set(user.id, {
+      id: String(user.id),
+      username: user.username
+    });
+  }
+
+  return Array.from(users.values());
+}
+
+function sendOnlineUsers() {
+  io.emit("online users", getOnlineUsers());
+}
+
+function findUser(username) {
+  if (typeof username !== "string") return null;
+
+  const clean = username.trim().slice(0, 20);
+  if (!clean) return null;
+
+  return db.prepare(`
+    SELECT id, username
+    FROM users
+    WHERE username = ? COLLATE NOCASE
+  `).get(clean);
+}
+
 io.on("connection", (socket) => {
-  const account = socket.request.session.user;
+  const user = socket.user;
+  const room = `user:${user.id}`;
 
-  const user = {
-    id: account.id,
-    username: account.username
-  };
-
+  socket.join(room);
   onlineUsers.set(socket.id, user);
 
-  console.log(`${user.username} connected:`, socket.id);
+  console.log("Connected:", user.username);
 
   socket.emit("chat history", messages);
   sendOnlineUsers();
 
-  // Public community chat
+  // Public community chat.
   socket.on("chat message", (data) => {
     if (!data || typeof data.text !== "string") return;
 
     const text = data.text.trim().slice(0, 1000);
-
     if (!text) return;
 
     const timestamp = Date.now();
@@ -158,31 +174,23 @@ io.on("connection", (socket) => {
     };
 
     messages.push(message);
-
-    if (messages.length > 200) {
-      messages = messages.slice(-200);
-    }
+    messages = messages.slice(-200);
 
     saveMessages();
-
     io.emit("chat message", message);
   });
 
-  // Private messaging
+  // Send a private message using the recipient's username.
   socket.on("private message", (data) => {
     if (!data || typeof data.to !== "string") return;
     if (typeof data.text !== "string") return;
 
-    const recipientSocketId = data.to;
+    const recipient = findUser(data.to);
     const text = data.text.trim().slice(0, 1000);
 
-    if (!text || recipientSocketId === socket.id) return;
-
-    const recipient = onlineUsers.get(recipientSocketId);
-
-    if (!recipient) {
+    if (!recipient || recipient.id === user.id || !text) {
       socket.emit("private message error", {
-        error: "This user is currently offline."
+        error: "Invalid recipient or message."
       });
       return;
     }
@@ -208,39 +216,36 @@ io.on("connection", (socket) => {
         time: formatTime(timestamp)
       };
 
-      // Send to all active tabs/devices of the recipient.
-      for (const [id, onlineUser] of onlineUsers.entries()) {
-        if (onlineUser.id === recipient.id) {
-          io.to(id).emit("private message", message);
-        }
-      }
+      // Send to every connected device of the recipient.
+      io.to(`user:${recipient.id}`).emit("private message", {
+        ...message,
+        mine: false
+      });
+
+      // Confirm the saved message to the sender.
+      socket.emit("private message sent", {
+        ...message,
+        mine: true
+      });
 
     } catch (error) {
       console.error("Private message error:", error.message);
 
       socket.emit("private message error", {
-        error: "Message could not be saved."
+        error: "Could not save your message."
       });
     }
   });
 
-  // Request saved private conversation history.
+  // Load a private conversation.
   socket.on("get private history", (data) => {
     if (!data || typeof data.username !== "string") return;
 
-    const username = data.username.trim().slice(0, 20);
-
-    if (!username) return;
-
-    const otherUser = db.prepare(`
-      SELECT id, username
-      FROM users
-      WHERE username = ?
-    `).get(username);
+    const otherUser = findUser(data.username);
 
     if (!otherUser || otherUser.id === user.id) {
       socket.emit("private history", {
-        username,
+        username: data.username,
         messages: []
       });
       return;
@@ -254,14 +259,14 @@ io.on("connection", (socket) => {
           (sender_id = ? AND recipient_id = ?)
           OR
           (sender_id = ? AND recipient_id = ?)
-        ORDER BY id ASC
+        ORDER BY id DESC
         LIMIT 200
       `).all(
         user.id,
         otherUser.id,
         otherUser.id,
         user.id
-      );
+      ).reverse();
 
       socket.emit("private history", {
         username: otherUser.username,
@@ -286,12 +291,33 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Typing indicators.
+  socket.on("typing", (data) => {
+    const recipient = findUser(data?.to);
+
+    if (!recipient || recipient.id === user.id) return;
+
+    io.to(`user:${recipient.id}`).emit("user typing", {
+      username: user.username
+    });
+  });
+
+  socket.on("stop typing", (data) => {
+    const recipient = findUser(data?.to);
+
+    if (!recipient || recipient.id === user.id) return;
+
+    io.to(`user:${recipient.id}`).emit("user stopped typing", {
+      username: user.username
+    });
+  });
+
   socket.on("disconnect", () => {
     onlineUsers.delete(socket.id);
 
     sendOnlineUsers();
 
-    console.log(`${user.username} disconnected:`, socket.id);
+    console.log("Disconnected:", user.username);
   });
 });
 
