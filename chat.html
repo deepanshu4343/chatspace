@@ -20,10 +20,9 @@
   --header:#111d28;
   --input:#202c38;
 }
-
 body.light {
   --bg:#e8eef2;
-  --panel:#ffffff;
+  --panel:#fff;
   --sidebar:#f5f8fa;
   --border:#d8e0e6;
   --accent:#008f78;
@@ -34,19 +33,16 @@ body.light {
   --header:#f5f8fa;
   --input:#edf2f5;
 }
-
 * {box-sizing:border-box}
-
 body {
   margin:0;
   background:var(--bg);
   color:var(--text);
   font-family:Arial,sans-serif;
 }
-
 button,input,textarea {font:inherit}
 button {cursor:pointer}
-
+button:disabled {opacity:.5;cursor:not-allowed}
 .app {
   display:flex;
   max-width:1500px;
@@ -55,7 +51,6 @@ button {cursor:pointer}
   background:var(--panel);
   overflow:hidden;
 }
-
 aside {
   width:340px;
   flex-shrink:0;
@@ -64,22 +59,18 @@ aside {
   display:flex;
   flex-direction:column;
 }
-
 .side-header {
   padding:18px;
   border-bottom:1px solid var(--border);
 }
-
 .top-row {
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:18px;
 }
-
 .logo {font-size:25px;font-weight:bold}
 .accent {color:var(--accent)}
-
 .icon-btn {
   border:1px solid var(--border);
   background:transparent;
@@ -87,400 +78,209 @@ aside {
   border-radius:9px;
   padding:8px 11px;
 }
-
-.profile {
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
+.profile {display:flex;align-items:center;gap:10px}
 .avatar {
-  width:43px;
-  height:43px;
-  border-radius:50%;
-  background:#23483f;
-  display:grid;
-  place-items:center;
-  font-weight:bold;
-  color:#b4ffe9;
-  flex-shrink:0;
+  width:43px;height:43px;border-radius:50%;
+  background:#23483f;display:grid;place-items:center;
+  font-weight:bold;color:#b4ffe9;flex-shrink:0;
 }
-
 .profile-info {min-width:0}
 .profile-name {font-weight:bold;overflow-wrap:anywhere}
-
-.status {
-  color:var(--accent);
-  font-size:12px;
-  margin-top:4px;
-}
-
+.status {color:var(--accent);font-size:12px;margin-top:4px}
 .logout {
-  margin-left:auto;
-  background:transparent;
-  border:1px solid var(--border);
-  color:var(--muted);
-  border-radius:8px;
-  padding:8px;
+  margin-left:auto;background:transparent;
+  border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:8px;
 }
-
 .search-wrap {padding:12px}
-
 .search {
-  width:100%;
-  padding:12px;
-  background:var(--input);
-  border:1px solid var(--border);
-  border-radius:10px;
-  color:var(--text);
-  outline:none;
+  width:100%;padding:12px;background:var(--input);
+  border:1px solid var(--border);border-radius:10px;
+  color:var(--text);outline:none;
 }
-
 .contact-heading {
-  padding:8px 16px;
-  color:var(--muted);
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:1px;
+  padding:8px 16px;color:var(--muted);
+  font-size:12px;text-transform:uppercase;letter-spacing:1px;
 }
-
 #contacts {
-  list-style:none;
-  margin:0;
-  padding:0;
-  overflow-y:auto;
-  flex:1;
+  list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;
 }
-
 .contact {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:13px 16px;
-  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;border-bottom:1px solid var(--border);
   cursor:pointer;
 }
-
 .contact:hover,.contact.active {background:var(--input)}
 .contact-info {flex:1;min-width:0}
 .contact-name {font-weight:bold;overflow-wrap:anywhere}
-.contact-status {color:var(--muted);font-size:12px;margin-top:5px}
-
-.online-dot,.offline-dot {
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  margin-left:auto;
-  flex-shrink:0;
+.contact-status {
+  color:var(--muted);font-size:12px;margin-top:5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-
+.online-dot,.offline-dot {
+  width:9px;height:9px;border-radius:50%;
+  margin-left:auto;flex-shrink:0;
+}
 .online-dot {background:#35d58b}
 .offline-dot {background:#87939c}
-
 .unread {
-  background:var(--accent);
-  color:#06241e;
-  border-radius:20px;
-  padding:3px 7px;
-  font-size:11px;
-  font-weight:bold;
+  background:var(--accent);color:#06241e;
+  border-radius:20px;padding:3px 7px;
+  font-size:11px;font-weight:bold;
 }
-
 main {
-  display:flex;
-  flex-direction:column;
-  flex:1;
-  min-width:0;
-  background:var(--panel);
+  display:flex;flex-direction:column;flex:1;
+  min-width:0;background:var(--panel);
 }
-
 header {
-  min-height:76px;
-  display:flex;
-  align-items:center;
-  padding:12px 18px;
-  gap:12px;
-  background:var(--header);
+  min-height:76px;display:flex;align-items:center;
+  padding:12px 18px;gap:12px;background:var(--header);
   border-bottom:1px solid var(--border);
 }
-
 #chatTitle {font-size:17px;font-weight:bold}
 #chatStatus {color:var(--muted);font-size:12px;margin-top:5px}
-
 .back {
-  display:none;
-  background:transparent;
-  border:0;
-  color:var(--text);
-  font-size:23px;
+  display:none;background:transparent;border:0;
+  color:var(--text);font-size:23px;
 }
-
 .header-actions {margin-left:auto;display:flex;gap:8px}
-
 #messages {
-  flex:1;
-  overflow-y:auto;
-  padding:22px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+  flex:1;overflow-y:auto;padding:22px;
+  display:flex;flex-direction:column;gap:12px;
   scroll-behavior:smooth;
 }
-
 .empty {
-  margin:auto;
-  text-align:center;
-  color:var(--muted);
-  line-height:1.8;
+  margin:auto;text-align:center;color:var(--muted);line-height:1.8;
 }
-
-.message {
-  max-width:min(78%,620px);
-  align-self:flex-start;
-}
-
+.message {max-width:min(82%,620px);align-self:flex-start;min-width:80px}
 .message.mine {align-self:flex-end}
-
-.meta {
-  color:var(--muted);
-  font-size:11px;
-  margin:0 5px 5px;
-}
-
+.meta {color:var(--muted);font-size:11px;margin:0 5px 5px}
 .bubble {
-  padding:11px 14px;
-  border-radius:5px 14px 14px;
-  background:var(--bubble);
-  white-space:pre-wrap;
-  overflow-wrap:anywhere;
-  line-height:1.5;
+  padding:11px 14px;border-radius:5px 14px 14px;
+  background:var(--bubble);white-space:pre-wrap;
+  overflow-wrap:anywhere;line-height:1.5;
 }
-
 .message.mine .bubble {
-  background:var(--mine);
-  border-radius:14px 5px 14px 14px;
+  background:var(--mine);border-radius:14px 5px 14px 14px;
 }
-
 .message.pending .bubble {opacity:.75}
-
+.message.deleted .bubble {font-style:italic;color:var(--muted)}
 .message-status {
-  text-align:right;
-  font-size:10px;
-  color:var(--muted);
-  margin-top:4px;
+  text-align:right;font-size:10px;color:var(--muted);margin-top:4px;
 }
-
 #typing {
-  min-height:20px;
-  padding:0 22px;
-  color:var(--accent);
-  font-size:12px;
+  min-height:20px;padding:0 22px;color:var(--accent);font-size:12px;
 }
-
 .composer {
-  padding:12px;
-  display:flex;
-  gap:9px;
-  align-items:center;
-  background:var(--header);
-  border-top:1px solid var(--border);
+  padding:12px;display:flex;gap:9px;align-items:center;
+  background:var(--header);border-top:1px solid var(--border);
 }
-
 #input {
-  flex:1;
-  min-width:0;
-  resize:none;
-  height:46px;
-  max-height:120px;
-  padding:13px 16px;
-  border:1px solid var(--border);
-  border-radius:23px;
-  background:var(--input);
-  color:var(--text);
-  outline:none;
+  flex:1;min-width:0;resize:none;height:46px;max-height:120px;
+  padding:13px 16px;border:1px solid var(--border);
+  border-radius:23px;background:var(--input);
+  color:var(--text);outline:none;
 }
-
 #send {
-  width:46px;
-  height:46px;
-  border:0;
-  border-radius:50%;
-  background:var(--accent);
-  color:#06241e;
-  font-size:20px;
-  font-weight:bold;
+  width:46px;height:46px;border:0;border-radius:50%;
+  background:var(--accent);color:#06241e;font-size:20px;font-weight:bold;
 }
-
-#send:disabled {opacity:.5;cursor:not-allowed}
-
 .emoji-wrap {position:relative}
-
 #emojiPanel {
-  display:none;
-  position:absolute;
-  bottom:55px;
-  left:0;
-  width:220px;
-  padding:10px;
-  background:var(--header);
-  border:1px solid var(--border);
-  border-radius:12px;
-  grid-template-columns:repeat(6,1fr);
-  gap:5px;
-  box-shadow:0 5px 20px #0005;
-  z-index:5;
+  display:none;position:absolute;bottom:55px;left:0;width:220px;
+  padding:10px;background:var(--header);
+  border:1px solid var(--border);border-radius:12px;
+  grid-template-columns:repeat(6,1fr);gap:5px;
+  box-shadow:0 5px 20px #0005;z-index:5;
 }
-
 #emojiPanel button {
-  background:transparent;
-  border:0;
-  padding:6px;
-  font-size:20px;
-  border-radius:6px;
+  background:transparent;border:0;padding:6px;
+  font-size:20px;border-radius:6px;
 }
-
 #emojiPanel button:hover {background:var(--input)}
-
 #toast {
-  position:fixed;
-  bottom:85px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#172b35;
-  color:white;
-  padding:11px 17px;
-  border-radius:10px;
-  display:none;
-  z-index:30;
-  box-shadow:0 4px 15px #0005;
-  max-width:90%;
-  text-align:center;
+  position:fixed;bottom:85px;left:50%;
+  transform:translateX(-50%);background:#172b35;color:white;
+  padding:11px 17px;border-radius:10px;display:none;
+  z-index:30;box-shadow:0 4px 15px #0005;
+  max-width:90%;text-align:center;
 }
-
 #messageSearch {
-  display:none;
-  padding:10px 14px;
-  background:var(--header);
+  display:none;padding:10px 14px;background:var(--header);
   border-bottom:1px solid var(--border);
 }
-
 #messageSearch input {
-  width:100%;
-  padding:10px;
-  background:var(--input);
-  color:var(--text);
-  border:1px solid var(--border);
-  border-radius:9px;
+  width:100%;padding:10px;background:var(--input);
+  color:var(--text);border:1px solid var(--border);border-radius:9px;
 }
-
-/* SETTINGS */
-
 .settings-overlay {
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:20;
-  background:#0009;
-  padding:16px;
-  align-items:center;
-  justify-content:center;
+  display:none;position:fixed;inset:0;z-index:20;
+  background:#0009;padding:16px;align-items:center;justify-content:center;
 }
-
 .settings-panel {
-  width:100%;
-  max-width:600px;
-  max-height:90vh;
-  overflow-y:auto;
-  background:var(--panel);
-  color:var(--text);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 10px 40px #0006;
+  width:100%;max-width:600px;max-height:90vh;overflow-y:auto;
+  background:var(--panel);color:var(--text);
+  border:1px solid var(--border);border-radius:16px;
+  padding:20px;box-shadow:0 10px 40px #0006;
 }
-
 .settings-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:18px;
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:18px;
 }
-
-.settings-header h2 {
-  margin:0;
-  font-size:22px;
-}
-
+.settings-header h2 {margin:0;font-size:22px}
 .settings-close {
-  background:transparent;
-  color:var(--text);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:8px 12px;
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;padding:8px 12px;
 }
-
-.settings-section {
-  border-top:1px solid var(--border);
-  padding:17px 0;
-}
-
-.settings-section h3 {
-  margin:0 0 13px;
-  font-size:16px;
-}
-
+.settings-section {border-top:1px solid var(--border);padding:17px 0}
+.settings-section h3 {margin:0 0 13px;font-size:16px}
 .settings-field {margin-bottom:13px}
-
 .settings-field label {
-  display:block;
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:6px;
+  display:block;color:var(--muted);font-size:13px;margin-bottom:6px;
 }
-
 .settings-field input {
-  width:100%;
-  padding:11px;
-  border:1px solid var(--border);
-  border-radius:9px;
-  background:var(--input);
-  color:var(--text);
-  outline:none;
+  width:100%;padding:11px;border:1px solid var(--border);
+  border-radius:9px;background:var(--input);color:var(--text);outline:none;
 }
-
 .settings-field input:disabled {opacity:.65}
-
 .settings-action {
-  border:0;
-  border-radius:9px;
-  padding:10px 15px;
-  background:var(--accent);
-  color:#06241e;
-  font-weight:bold;
-  margin-top:4px;
+  border:0;border-radius:9px;padding:10px 15px;
+  background:var(--accent);color:#06241e;font-weight:bold;margin-top:4px;
 }
-
-.settings-note {
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-  margin-top:8px;
-}
-
+.settings-note {color:var(--muted);font-size:12px;line-height:1.6;margin-top:8px}
 .settings-toggle {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:9px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;padding:9px 0;
 }
-
-.settings-toggle input {
-  width:19px;
-  height:19px;
-  accent-color:var(--accent);
+.settings-toggle input {width:19px;height:19px;accent-color:var(--accent)}
+.message-tools {
+  display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;
 }
-
+.message-tools button,.reaction-list button {
+  background:var(--input);color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  padding:5px 9px;font-size:12px;
+}
+.message-tools button:hover,.reaction-list button:hover {
+  border-color:var(--accent);
+}
+.reaction-list {display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.reply-preview {
+  background:var(--input);border-left:3px solid var(--accent);
+  padding:7px 10px;border-radius:6px;margin-bottom:7px;
+  font-size:12px;color:var(--muted);
+}
+#replyBar {
+  display:none;padding:9px 14px;background:var(--header);
+  border-top:1px solid var(--border);color:var(--accent);
+  font-size:13px;justify-content:space-between;align-items:center;
+}
+#cancelReply {
+  background:transparent;border:0;color:var(--text);font-size:18px;
+}
+.pinned-label {
+  font-size:11px;color:var(--accent);margin:0 5px 4px;
+}
 @media(max-width:650px) {
   .app {position:relative}
   aside {width:100%;border-right:0}
@@ -489,67 +289,12 @@ header {
   .app.chat-open main {display:flex}
   .back {display:block}
   #messages {padding:14px}
-  .message {max-width:90%}
+  .message {max-width:92%}
   .side-header {padding:14px}
   .settings-overlay {padding:8px}
   .settings-panel {max-height:95vh;padding:15px}
-}
-
-.message-tools {
-  display:flex;
-  gap:5px;
-  flex-wrap:wrap;
-  margin-top:6px;
-}
-
-.message-tools button,
-.reaction-list button {
-  background:var(--input);
-  color:var(--text);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:5px 9px;
-  font-size:12px;
-}
-
-.message-tools button:hover,
-.reaction-list button:hover {
-  border-color:var(--accent);
-}
-
-.reaction-list {
-  display:flex;
-  gap:5px;
-  flex-wrap:wrap;
-  margin-top:6px;
-}
-
-.reply-preview {
-  background:var(--input);
-  border-left:3px solid var(--accent);
-  padding:7px 10px;
-  border-radius:6px;
-  margin-bottom:7px;
-  font-size:12px;
-  color:var(--muted);
-}
-
-#replyBar {
-  display:none;
-  padding:9px 14px;
-  background:var(--header);
-  border-top:1px solid var(--border);
-  color:var(--accent);
-  font-size:13px;
-  justify-content:space-between;
-  align-items:center;
-}
-
-#cancelReply {
-  background:transparent;
-  border:0;
-  color:var(--text);
-  font-size:18px;
+  header {padding:10px}
+  .header-actions {gap:4px}
 }
 </style>
 </head>
@@ -562,11 +307,10 @@ header {
     <div class="top-row">
       <div class="logo">Chat<span class="accent">Space</span></div>
       <div style="display:flex;gap:7px">
-        <button class="icon-btn" id="settingsButton" title="Settings">⚙️</button>
-        <button class="icon-btn" id="themeButton" title="Change theme">☀️</button>
+        <button class="icon-btn" id="settingsButton">⚙️</button>
+        <button class="icon-btn" id="themeButton">☀️</button>
       </div>
     </div>
-
     <div class="profile">
       <div class="avatar" id="myAvatar">?</div>
       <div class="profile-info">
@@ -579,8 +323,7 @@ header {
 
   <div class="search-wrap">
     <input class="search" id="search"
-      placeholder="Search online contacts..."
-      autocomplete="off">
+      placeholder="Search contacts..." autocomplete="off">
   </div>
 
   <div class="contact-heading">Conversations</div>
@@ -604,7 +347,7 @@ header {
   </header>
 
   <div id="messageSearch">
-    <input id="messageSearchInput" placeholder="Find text in this conversation...">
+    <input id="messageSearchInput" placeholder="Search messages...">
   </div>
 
   <div id="messages" aria-live="polite">
@@ -613,23 +356,24 @@ header {
 
   <div id="typing"></div>
 
+  <div id="replyBar">
+    <span id="replyText">Replying...</span>
+    <button type="button" id="cancelReply">✕</button>
+  </div>
+
   <form class="composer" id="form">
     <div class="emoji-wrap">
       <button type="button" class="icon-btn" id="emojiButton">😊</button>
       <div id="emojiPanel"></div>
     </div>
-
     <textarea id="input" maxlength="1000"
-      placeholder="Type a message..."
-      autocomplete="off" required></textarea>
-
+      placeholder="Type a message..." autocomplete="off" required></textarea>
     <button id="send" type="submit" disabled>➤</button>
   </form>
 </main>
 </div>
 
-<!-- SETTINGS WINDOW -->
-
+<!-- SETTINGS -->
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-panel">
     <div class="settings-header">
@@ -639,115 +383,72 @@ header {
 
     <div class="settings-section">
       <h3>👤 Profile</h3>
-
       <div class="settings-field">
         <label>Username</label>
-        <input id="settingsUsername" maxlength="20"
-          placeholder="Your username">
+        <input id="settingsUsername" maxlength="20" placeholder="Your username">
       </div>
-
       <button class="settings-action" id="saveUsername">Save username</button>
-
-      <p class="settings-note">
-        Your username is visible to other ChatSpace users.
-      </p>
+      <p class="settings-note">Your username is visible to other ChatSpace users.</p>
     </div>
 
     <div class="settings-section">
       <h3>📧 Email & Recovery</h3>
-
       <div class="settings-field">
         <label>Current email</label>
         <input id="settingsEmail" type="email" disabled>
       </div>
-
       <div class="settings-field">
         <label>New email address</label>
         <input id="newEmail" type="email" placeholder="Enter your new email">
       </div>
-
       <button class="settings-action" id="changeEmail">Change email</button>
-
       <div class="settings-field" style="margin-top:18px">
         <label>Recovery email</label>
-        <input id="recoveryEmail" type="email"
-          placeholder="Enter recovery email">
+        <input id="recoveryEmail" type="email" placeholder="Enter recovery email">
       </div>
-
-      <button class="settings-action" id="addRecoveryEmail">
-        Add recovery email
-      </button>
-
+      <button class="settings-action" id="addRecoveryEmail">Add recovery email</button>
       <p class="settings-note" id="emailStatus"></p>
     </div>
 
     <div class="settings-section">
       <h3>🔐 Security</h3>
-
       <div class="settings-field">
         <label>Current password</label>
-        <input id="currentPassword" type="password"
-          autocomplete="current-password">
+        <input id="currentPassword" type="password" autocomplete="current-password">
       </div>
-
       <div class="settings-field">
         <label>New password</label>
-        <input id="newPassword" type="password"
-          autocomplete="new-password">
+        <input id="newPassword" type="password" autocomplete="new-password">
       </div>
-
       <div class="settings-field">
         <label>Confirm new password</label>
-        <input id="confirmPassword" type="password"
-          autocomplete="new-password">
+        <input id="confirmPassword" type="password" autocomplete="new-password">
       </div>
-
-      <button class="settings-action" id="changePassword">
-        Change password
-      </button>
-
-      <p class="settings-note">
-        Use a strong password that you do not use on other websites.
-      </p>
+      <button class="settings-action" id="changePassword">Change password</button>
     </div>
 
     <div class="settings-section">
       <h3>🔔 Notifications</h3>
-
       <div class="settings-toggle">
         <span>Browser message notifications</span>
         <input type="checkbox" id="notificationToggle">
       </div>
-
-      <p class="settings-note">
-        Browser permission is required for notifications.
-      </p>
     </div>
 
     <div class="settings-section">
       <h3>🎨 Appearance</h3>
-
       <div class="settings-toggle">
         <span>Light theme</span>
         <input type="checkbox" id="lightThemeToggle">
       </div>
-
-      <p class="settings-note">
-        Your theme preference is saved in this browser.
-      </p>
     </div>
 
     <div class="settings-section">
       <h3>🛡️ Privacy</h3>
-
       <div class="settings-toggle">
         <span>Show message notification previews</span>
         <input type="checkbox" id="previewToggle" checked>
       </div>
-
-      <p class="settings-note">
-        This setting controls message previews on this browser.
-      </p>
     </div>
   </div>
 </div>
@@ -755,7 +456,6 @@ header {
 <div id="toast"></div>
 
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
 const $ = id => document.getElementById(id);
 
@@ -766,36 +466,30 @@ const input = $("input");
 const form = $("form");
 const search = $("search");
 
-const myName = $("myName");
-const myAvatar = $("myAvatar");
-const chatTitle = $("chatTitle");
-const chatStatus = $("chatStatus");
-const chatAvatar = $("chatAvatar");
-const typing = $("typing");
-const sendButton = $("send");
-
 let currentUser = null;
 let socket = null;
 let selectedUsername = null;
 let onlineList = [];
 let unread = {};
+let lastMessages = {};
 let typingTimer = null;
+let toastTimer = null;
 let generalHistory = [];
 let pendingPrivate = [];
-let toastTimer = null;
+let replyTarget = null;
+let replyPreviewText = "";
 
 function avatarLetter(name) {
   return (name || "?").charAt(0).toUpperCase();
 }
 
 function showToast(text) {
-  const toast = $("toast");
-  toast.textContent = text;
-  toast.style.display = "block";
+  $("toast").textContent = text;
+  $("toast").style.display = "block";
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
-    toast.style.display = "none";
-  }, 2600);
+    $("toast").style.display = "none";
+  }, 2800);
 }
 
 function scrollBottom() {
@@ -816,15 +510,96 @@ function showEmpty(text) {
 
 function formatTime(value) {
   if (!value) return new Date().toLocaleTimeString([], {
-    hour:"2-digit", minute:"2-digit"
+    hour:"2-digit",minute:"2-digit"
   });
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
+  if (Number.isNaN(date.getTime())) return "";
 
   return date.toLocaleTimeString([], {
-    hour:"2-digit", minute:"2-digit"
+    hour:"2-digit",minute:"2-digit"
   });
+}
+
+function setReply(id, text, username) {
+  replyTarget = id;
+  replyPreviewText = text || "";
+  $("replyText").textContent =
+    "Replying to " + (username || "message") + ": " +
+    replyPreviewText.slice(0, 65);
+  $("replyBar").style.display = "flex";
+  input.focus();
+}
+
+function cancelReply() {
+  replyTarget = null;
+  replyPreviewText = "";
+  $("replyBar").style.display = "none";
+}
+
+$("cancelReply").addEventListener("click", cancelReply);
+
+function updateMessageElement(id, callback) {
+  const item = [...messages.querySelectorAll(".message")]
+    .find(element => element.dataset.messageId === String(id));
+
+  if (item) callback(item);
+}
+
+function addMessageActions(item, data, mine) {
+  if (!data.id || selectedUsername === null || data.deleted) return;
+
+  const tools = document.createElement("div");
+  tools.className = "message-tools";
+
+  function action(label, callback) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.addEventListener("click", callback);
+    tools.appendChild(button);
+  }
+
+  action("↩ Reply", () => {
+    setReply(data.id, data.text, data.from || data.username);
+  });
+
+  action("❤️ React", () => {
+    const emoji = prompt(
+      "Choose an emoji: ❤️ 😂 😮 😢 👍 👎 🔥 👏 🎉 🙏",
+      "❤️"
+    );
+
+    if (!emoji || !socket?.connected) return;
+
+    socket.emit("react to private message", {
+      id:data.id,
+      emoji:emoji.trim()
+    });
+  });
+
+  action(data.pinned ? "📌 Unpin" : "📌 Pin", () => {
+    socket.emit("toggle pin private message", {id:data.id});
+  });
+
+  if (mine) {
+    action("✏️ Edit", () => {
+      const updated = prompt("Edit your message:", data.text);
+      if (updated === null || !updated.trim()) return;
+
+      socket.emit("edit private message", {
+        id:data.id,
+        text:updated.trim()
+      });
+    });
+
+    action("🗑 Delete", () => {
+      if (!confirm("Delete this message?")) return;
+      socket.emit("delete private message", {id:data.id});
+    });
+  }
+
+  item.appendChild(tools);
 }
 
 function showMessage(data, mine, status = "") {
@@ -833,52 +608,95 @@ function showMessage(data, mine, status = "") {
   const item = document.createElement("div");
   item.className = "message" + (mine ? " mine" : "");
 
+  if (data.id != null) item.dataset.messageId = String(data.id);
+  if (data.deleted) item.classList.add("deleted");
+
   const meta = document.createElement("div");
   meta.className = "meta";
+
   meta.textContent =
     (data.username || data.from || (mine ? "You" : "User")) +
-    " · " + formatTime(data.time || data.created_at);
+    " · " + formatTime(data.time || data.created_at) +
+    (data.edited ? " · edited" : "");
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.textContent = data.text;
+
+  if (data.replyTo) {
+    const preview = document.createElement("div");
+    preview.className = "reply-preview";
+    preview.textContent =
+      (data.replyTo.username || "Message") + ": " +
+      (data.replyTo.text || "");
+    bubble.appendChild(preview);
+  }
+
+  const textNode = document.createElement("div");
+  textNode.textContent = data.text;
+  bubble.appendChild(textNode);
 
   item.append(meta, bubble);
 
-  if (status) {
-    const statusElement = document.createElement("div");
-    statusElement.className = "message-status";
-    statusElement.textContent = status;
-    item.appendChild(statusElement);
+  if (data.pinned) {
+    const pinned = document.createElement("div");
+    pinned.className = "pinned-label";
+    pinned.textContent = "📌 Pinned message";
+    item.appendChild(pinned);
   }
+
+  if (Array.isArray(data.reactions) && data.reactions.length) {
+    const list = document.createElement("div");
+    list.className = "reaction-list";
+
+    data.reactions.forEach(reaction => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = reaction.emoji;
+      list.appendChild(button);
+    });
+
+    item.appendChild(list);
+  }
+
+  const messageStatus = document.createElement("div");
+  messageStatus.className = "message-status";
+
+  if (data.read && mine) {
+    messageStatus.textContent = "✓✓ Read";
+  } else if (mine) {
+    messageStatus.textContent = status || "✓ Sent";
+  } else {
+    messageStatus.textContent = status;
+  }
+
+  if (messageStatus.textContent) item.appendChild(messageStatus);
+
+  addMessageActions(item, data, mine);
 
   messages.appendChild(item);
   scrollBottom();
   return item;
 }
 
-function renderGeneralHistory() {
-  clearMessages();
-
-  if (!generalHistory.length) {
-    showEmpty("Welcome! Start the community conversation.");
-    return;
-  }
-
-  generalHistory.forEach(message => {
-    showMessage(message, message.username === currentUser.username);
-  });
-}
+/* CONTACTS */
 
 function renderContacts() {
   contacts.replaceChildren();
 
-  const query = search.value.toLowerCase();
+  const query = search.value.trim().toLowerCase();
 
   const filtered = onlineList.filter(user =>
     user.id !== String(currentUser.id) &&
-    user.username.toLowerCase().includes(query)
+    String(user.username || "").toLowerCase().includes(query)
   );
+
+  if (!filtered.length) {
+    const empty = document.createElement("li");
+    empty.className = "contact";
+    empty.textContent = query ? "No users found." : "No users online.";
+    contacts.appendChild(empty);
+    return;
+  }
 
   filtered.forEach(user => {
     const li = document.createElement("li");
@@ -901,15 +719,16 @@ function renderContacts() {
 
     const status = document.createElement("div");
     status.className = "contact-status";
-    status.textContent = "Online";
+    status.textContent = lastMessages[user.username] || "Online";
 
     info.append(name, status);
     li.append(avatar, info);
 
-    if (unread[user.username]) {
+    if (unread[user.username] > 0) {
       const badge = document.createElement("span");
       badge.className = "unread";
-      badge.textContent = unread[user.username];
+      badge.textContent = unread[user.username] > 99
+        ? "99+" : unread[user.username];
       li.appendChild(badge);
     }
 
@@ -920,13 +739,46 @@ function renderContacts() {
     li.addEventListener("click", () => openPrivateChat(user.username));
     contacts.appendChild(li);
   });
+}
 
-  if (!filtered.length) {
-    const li = document.createElement("li");
-    li.className = "contact";
-    li.textContent = "No online contacts found.";
-    contacts.appendChild(li);
+search.addEventListener("input", renderContacts);
+
+function markConversationRead(username, upToId) {
+  if (!username || !upToId || !socket?.connected) return;
+
+  socket.emit("read private messages", {
+    username,
+    upToId
+  });
+}
+
+function openPrivateChat(username) {
+  if (!socket?.connected) {
+    showToast("Connecting. Please wait...");
+    return;
   }
+
+  if (selectedUsername) {
+    socket.emit("stop typing", {to:selectedUsername});
+  }
+
+  selectedUsername = username;
+  unread[username] = 0;
+  cancelReply();
+
+  $("chatTitle").textContent = username;
+  $("chatAvatar").textContent = avatarLetter(username);
+
+  const online = onlineList.some(user => user.username === username);
+  $("chatStatus").textContent = online ? "Online" : "Offline";
+
+  $("typing").textContent = "";
+  app.classList.add("chat-open");
+  renderContacts();
+  showEmpty("Loading conversation...");
+
+  socket.emit("get private history", {username});
+  input.focus();
 }
 
 function openGeneralChat() {
@@ -935,45 +787,35 @@ function openGeneralChat() {
   }
 
   selectedUsername = null;
-  typing.textContent = "";
+  cancelReply();
 
-  chatTitle.textContent = "General Chat";
-  chatAvatar.textContent = "C";
-  chatStatus.textContent = "Community conversation";
+  $("typing").textContent = "";
+  $("chatTitle").textContent = "General Chat";
+  $("chatAvatar").textContent = "C";
+  $("chatStatus").textContent = "Community conversation";
 
   app.classList.add("chat-open");
   renderContacts();
   renderGeneralHistory();
-  input.focus();
 }
 
-function openPrivateChat(username) {
-  if (!socket?.connected) {
-    showToast("Connecting to ChatSpace. Please wait.");
+function renderGeneralHistory() {
+  clearMessages();
+
+  if (!generalHistory.length) {
+    showEmpty("Welcome! Start the community conversation.");
     return;
   }
 
-  if (selectedUsername && socket.connected) {
-    socket.emit("stop typing", {to:selectedUsername});
-  }
-
-  selectedUsername = username;
-  unread[username] = 0;
-
-  chatTitle.textContent = username;
-  chatAvatar.textContent = avatarLetter(username);
-
-  const isOnline = onlineList.some(user => user.username === username);
-  chatStatus.textContent = isOnline ? "Online" : "Offline";
-
-  typing.textContent = "";
-  app.classList.add("chat-open");
-  renderContacts();
-  showEmpty("Loading conversation...");
-
-  socket.emit("get private history", {username});
-  input.focus();
+  generalHistory.forEach(message => {
+    showMessage(
+      message,
+      message.username === currentUser.username
+    );
+  });
 }
+
+/* PRIVATE MESSAGE HISTORY */
 
 function handlePrivateHistory(data) {
   if (!data || data.username !== selectedUsername) return;
@@ -985,33 +827,53 @@ function handlePrivateHistory(data) {
     return;
   }
 
+  let lastIncomingId = null;
+
   data.messages.forEach(message => {
     showMessage(message, message.mine === true);
+
+    if (!message.mine && message.id) {
+      lastIncomingId = message.id;
+    }
   });
+
+  if (lastIncomingId) {
+    markConversationRead(selectedUsername, lastIncomingId);
+  }
 }
+
+/* PRIVATE MESSAGES */
 
 function handlePrivateMessage(message) {
   if (!message || typeof message.text !== "string") return;
 
-  if (selectedUsername === message.from) {
+  const sender = message.from;
+
+  if (sender) {
+    lastMessages[sender] = message.deleted
+      ? "Message deleted"
+      : message.text;
+  }
+
+  if (selectedUsername === sender) {
     showMessage(message, false);
+
+    if (message.id) {
+      markConversationRead(sender, message.id);
+    }
   } else {
-    unread[message.from] = (unread[message.from] || 0) + 1;
+    unread[sender] = (unread[sender] || 0) + 1;
     renderContacts();
 
-    const notificationsEnabled =
-      localStorage.getItem("chatspace-notifications") === "on";
-
-    if (notificationsEnabled &&
+    if (localStorage.getItem("chatspace-notifications") === "on" &&
         "Notification" in window &&
         Notification.permission === "granted") {
 
-      const previewEnabled =
-        localStorage.getItem("chatspace-previews") !== "off";
+      const preview = localStorage.getItem("chatspace-previews") !== "off";
 
       new Notification("New ChatSpace message", {
-        body: previewEnabled
-          ? message.from + ": " + message.text
+        body:preview
+          ? sender + ": " + message.text
           : "You received a new message."
       });
     }
@@ -1028,22 +890,32 @@ function handleSentMessage(message) {
 
   if (index !== -1) {
     const pending = pendingPrivate.splice(index, 1)[0];
-    pending.element.classList.remove("pending");
 
-    const status = pending.element.querySelector(".message-status");
-    if (status) status.textContent = "Sent";
+    const visible = selectedUsername === pending.username &&
+      pending.element.isConnected;
+
+    if (visible) {
+      const replacement = showMessage(
+        message,
+        true,
+        message.read ? "✓✓ Read" : "✓ Sent"
+      );
+      pending.element.remove();
+      if (replacement && message.id) {
+        replacement.dataset.messageId = String(message.id);
+      }
+    }
   }
+
+  lastMessages[selectedUsername] = message.text;
+  renderContacts();
 }
 
-function handlePrivateError(data) {
-  showToast(data?.error || "Private message failed.");
-}
-
-function addPrivateOptimisticMessage(text) {
+function addPrivateOptimisticMessage(text, replyTo) {
   const element = showMessage({
     text,
-    username: currentUser.username,
-    time: new Date()
+    username:currentUser.username,
+    time:Date.now()
   }, true, "Sending...");
 
   element.classList.add("pending");
@@ -1051,9 +923,115 @@ function addPrivateOptimisticMessage(text) {
   pendingPrivate.push({
     text,
     username:selectedUsername,
-    element
+    element,
+    replyTo
   });
 }
+
+/* GENERAL CHAT */
+
+function handleGeneralMessage(message) {
+  if (!message || typeof message.text !== "string") return;
+
+  generalHistory.push(message);
+  if (generalHistory.length > 200) generalHistory.shift();
+
+  if (selectedUsername === null) {
+    showMessage(
+      message,
+      message.username === currentUser.username
+    );
+  }
+}
+
+/* NEW PRIVATE MESSAGE FEATURES */
+
+function setupMessageEvents() {
+  socket.on("private message updated", data => {
+    updateMessageElement(data.id, item => {
+      const bubble = item.querySelector(".bubble");
+      if (bubble) bubble.textContent = data.text;
+
+      const meta = item.querySelector(".meta");
+      if (meta && !meta.textContent.includes("edited")) {
+        meta.textContent += " · edited";
+      }
+    });
+  });
+
+  socket.on("private message deleted", data => {
+    updateMessageElement(data.id, item => {
+      const bubble = item.querySelector(".bubble");
+      if (bubble) bubble.textContent = "This message was deleted.";
+
+      item.classList.add("deleted");
+      item.querySelector(".message-tools")?.remove();
+      item.querySelector(".reaction-list")?.remove();
+    });
+  });
+
+  socket.on("private message reactions", data => {
+    updateMessageElement(data.id, item => {
+      item.querySelector(".reaction-list")?.remove();
+
+      if (!Array.isArray(data.reactions) || !data.reactions.length) return;
+
+      const list = document.createElement("div");
+      list.className = "reaction-list";
+
+      data.reactions.forEach(reaction => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = reaction.emoji;
+        list.appendChild(button);
+      });
+
+      item.appendChild(list);
+    });
+  });
+
+  socket.on("private message pin changed", data => {
+    updateMessageElement(data.id, item => {
+      item.querySelector(".pinned-label")?.remove();
+
+      if (data.pinned) {
+        const label = document.createElement("div");
+        label.className = "pinned-label";
+        label.textContent = "📌 Pinned message";
+        item.insertBefore(label, item.querySelector(".message-tools"));
+      }
+
+      const pinButton = [...item.querySelectorAll(".message-tools button")]
+        .find(button => button.textContent.includes("Pin"));
+
+      if (pinButton) {
+        pinButton.textContent = data.pinned ? "📌 Unpin" : "📌 Pin";
+      }
+    });
+  });
+
+  socket.on("private messages read", data => {
+    if (!data || data.username !== selectedUsername) return;
+
+    messages.querySelectorAll(".message.mine").forEach(item => {
+      const id = Number(item.dataset.messageId);
+
+      if (id && id <= Number(data.upToId)) {
+        let status = item.querySelector(".message-status");
+
+        if (!status) {
+          status = document.createElement("div");
+          status.className = "message-status";
+          item.appendChild(status);
+        }
+
+        status.textContent = "✓✓ Read";
+      }
+    });
+  });
+}
+
+/* SOCKET START */
 
 async function start() {
   try {
@@ -1062,38 +1040,31 @@ async function start() {
     });
 
     if (!response.ok) {
-      window.location.href = "/";
+      location.href = "/";
       return;
     }
 
     const data = await response.json();
     currentUser = data.user;
 
-    myName.textContent = currentUser.username;
-    myAvatar.textContent = avatarLetter(currentUser.username);
+    $("myName").textContent = currentUser.username;
+    $("myAvatar").textContent = avatarLetter(currentUser.username);
 
     socket = io({withCredentials:true});
 
     socket.on("connect", () => {
-      chatStatus.textContent = selectedUsername
-        ? "Connected"
-        : "Community conversation";
-
-      sendButton.disabled = false;
       $("myStatus").textContent = "● Online";
-    });
-
-    socket.on("connect_error", error => {
-      chatStatus.textContent = "Connection error";
-      sendButton.disabled = true;
-      showToast("Connection problem. Reconnecting...");
-      console.error(error);
+      $("send").disabled = false;
     });
 
     socket.on("disconnect", () => {
-      chatStatus.textContent = "Reconnecting...";
-      sendButton.disabled = true;
       $("myStatus").textContent = "● Reconnecting";
+      $("send").disabled = true;
+    });
+
+    socket.on("connect_error", error => {
+      console.error(error);
+      showToast("Connection problem. Reconnecting...");
     });
 
     socket.on("chat history", history => {
@@ -1106,58 +1077,48 @@ async function start() {
       }
     });
 
-    socket.on("chat message", message => {
-      if (!message || typeof message.text !== "string") return;
+    socket.on("chat message", handleGeneralMessage);
 
-      generalHistory.push(message);
-      if (generalHistory.length > 200) generalHistory.shift();
-
-      if (selectedUsername === null) {
-        showMessage(
-          message,
-          message.username === currentUser.username
-        );
-      }
-    });
-
-    socket.on("online users", list => {
-      onlineList = Array.isArray(list) ? list : [];
+    socket.on("online users", users => {
+      onlineList = Array.isArray(users) ? users : [];
       renderContacts();
 
       if (selectedUsername) {
-        const isOnline = onlineList.some(
+        const online = onlineList.some(
           user => user.username === selectedUsername
         );
-
-        chatStatus.textContent = isOnline ? "Online" : "Offline";
+        $("chatStatus").textContent = online ? "Online" : "Offline";
       }
     });
 
     socket.on("private history", handlePrivateHistory);
     socket.on("private message", handlePrivateMessage);
     socket.on("private message sent", handleSentMessage);
-    socket.on("private message error", handlePrivateError);
+    socket.on("private message error", data => {
+      showToast(data?.error || "Message could not be sent.");
+    });
 
     socket.on("user typing", data => {
       if (data?.username === selectedUsername) {
-        typing.textContent = data.username + " is typing...";
+        $("typing").textContent = data.username + " is typing...";
       }
     });
 
     socket.on("user stopped typing", data => {
       if (data?.username === selectedUsername) {
-        typing.textContent = "";
+        $("typing").textContent = "";
       }
     });
 
-    sendButton.disabled = true;
+    setupMessageEvents();
 
   } catch (error) {
     console.error(error);
-    chatStatus.textContent = "Could not load your account.";
-    showToast("Could not load ChatSpace.");
+    showToast("Could not load your account.");
   }
 }
+
+/* SEND MESSAGE */
 
 form.addEventListener("submit", event => {
   event.preventDefault();
@@ -1172,13 +1133,19 @@ form.addEventListener("submit", event => {
 
   if (selectedUsername) {
     const recipient = selectedUsername;
+    const replyTo = replyTarget;
+
     socket.emit("stop typing", {to:recipient});
-    addPrivateOptimisticMessage(text);
+
+    addPrivateOptimisticMessage(text, replyTo);
 
     socket.emit("private message", {
       to:recipient,
-      text
+      text,
+      replyTo
     });
+
+    cancelReply();
 
   } else {
     socket.emit("chat message", {text});
@@ -1188,6 +1155,8 @@ form.addEventListener("submit", event => {
   input.style.height = "46px";
   input.focus();
 });
+
+/* TYPING */
 
 input.addEventListener("input", () => {
   input.style.height = "46px";
@@ -1210,7 +1179,7 @@ input.addEventListener("keydown", event => {
   }
 });
 
-search.addEventListener("input", renderContacts);
+/* NAVIGATION */
 
 $("back").addEventListener("click", () => {
   app.classList.remove("chat-open");
@@ -1226,53 +1195,47 @@ $("logout").addEventListener("click", async () => {
       method:"POST",
       credentials:"same-origin"
     });
-
-    window.location.href = "/";
+    location.href = "/";
   } catch (error) {
-    showToast("Logout failed. Please try again.");
+    showToast("Logout failed.");
   }
 });
 
-// THEME
-const themeButton = $("themeButton");
+/* THEME */
 
 function applyTheme(theme) {
   document.body.classList.toggle("light", theme === "light");
-  themeButton.textContent = theme === "light" ? "🌙" : "☀️";
-
-  const toggle = $("lightThemeToggle");
-  if (toggle) toggle.checked = theme === "light";
+  $("themeButton").textContent = theme === "light" ? "🌙" : "☀️";
+  $("lightThemeToggle").checked = theme === "light";
 }
 
 let savedTheme = "dark";
-
 try {
   savedTheme = localStorage.getItem("chatspace-theme") || "dark";
 } catch (error) {}
 
 applyTheme(savedTheme);
 
-themeButton.addEventListener("click", () => {
-  const next = document.body.classList.contains("light")
-    ? "dark"
-    : "light";
-
-  applyTheme(next);
-
-  try {
-    localStorage.setItem("chatspace-theme", next);
-  } catch (error) {}
+$("themeButton").addEventListener("click", () => {
+  const theme = document.body.classList.contains("light") ? "dark" : "light";
+  applyTheme(theme);
+  localStorage.setItem("chatspace-theme", theme);
 });
 
-// EMOJI PICKER
+$("lightThemeToggle").addEventListener("change", () => {
+  const theme = $("lightThemeToggle").checked ? "light" : "dark";
+  applyTheme(theme);
+  localStorage.setItem("chatspace-theme", theme);
+});
+
+/* EMOJI PICKER */
+
 const emojiList = [
   "😀","😁","😂","🤣","😊","😍",
   "🥰","😘","😎","😭","😢","😡",
   "👍","👎","👏","🙏","❤️","🔥",
   "🎉","💯","🤝","😴","🤔","🙌"
 ];
-
-const emojiPanel = $("emojiPanel");
 
 emojiList.forEach(emoji => {
   const button = document.createElement("button");
@@ -1282,52 +1245,50 @@ emojiList.forEach(emoji => {
   button.addEventListener("click", () => {
     input.value += emoji;
     input.focus();
-    emojiPanel.style.display = "none";
+    $("emojiPanel").style.display = "none";
   });
 
-  emojiPanel.appendChild(button);
+  $("emojiPanel").appendChild(button);
 });
 
 $("emojiButton").addEventListener("click", () => {
-  emojiPanel.style.display =
-    emojiPanel.style.display === "grid" ? "none" : "grid";
+  const panel = $("emojiPanel");
+  panel.style.display = panel.style.display === "grid" ? "none" : "grid";
 });
 
-// MESSAGE SEARCH
-const messageSearch = $("messageSearch");
-const messageSearchInput = $("messageSearchInput");
+/* MESSAGE SEARCH */
 
 $("searchMessagesButton").addEventListener("click", () => {
-  const visible = messageSearch.style.display === "block";
-  messageSearch.style.display = visible ? "none" : "block";
-  if (!visible) messageSearchInput.focus();
+  const panel = $("messageSearch");
+  const open = panel.style.display === "block";
+  panel.style.display = open ? "none" : "block";
+  if (!open) $("messageSearchInput").focus();
 });
 
-messageSearchInput.addEventListener("input", () => {
-  const query = messageSearchInput.value.toLowerCase();
+$("messageSearchInput").addEventListener("input", () => {
+  const query = $("messageSearchInput").value.toLowerCase();
 
-  [...messages.querySelectorAll(".message")].forEach(item => {
+  messages.querySelectorAll(".message").forEach(item => {
     item.style.display = item.textContent.toLowerCase().includes(query)
       ? ""
       : "none";
   });
 });
 
-// SETTINGS PANEL
-const settingsOverlay = $("settingsOverlay");
+/* SETTINGS */
 
 $("settingsButton").addEventListener("click", async () => {
-  settingsOverlay.style.display = "flex";
+  $("settingsOverlay").style.display = "flex";
   await loadSettings();
 });
 
 $("closeSettings").addEventListener("click", () => {
-  settingsOverlay.style.display = "none";
+  $("settingsOverlay").style.display = "none";
 });
 
-settingsOverlay.addEventListener("click", event => {
-  if (event.target === settingsOverlay) {
-    settingsOverlay.style.display = "none";
+$("settingsOverlay").addEventListener("click", event => {
+  if (event.target === $("settingsOverlay")) {
+    $("settingsOverlay").style.display = "none";
   }
 });
 
@@ -1335,9 +1296,7 @@ async function settingsRequest(url, data) {
   const response = await fetch("/api/auth/" + url, {
     method:"POST",
     credentials:"same-origin",
-    headers: {
-      "Content-Type":"application/json"
-    },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify(data)
   });
 
@@ -1378,88 +1337,60 @@ async function loadSettings() {
   }
 }
 
-// CHANGE USERNAME
 $("saveUsername").addEventListener("click", async () => {
   const username = $("settingsUsername").value.trim();
 
   try {
-    const result = await settingsRequest("change-username", {
-      username
-    });
-
+    const result = await settingsRequest("change-username", {username});
     showToast(result.message || "Username updated!");
-
-    currentUser.username = username;
-    myName.textContent = username;
-    myAvatar.textContent = avatarLetter(username);
-
-    setTimeout(() => location.reload(), 900);
-
+    location.reload();
   } catch (error) {
     showToast(error.message);
   }
 });
 
-// CHANGE EMAIL
 $("changeEmail").addEventListener("click", async () => {
   const email = $("newEmail").value.trim();
-
-  if (!email) {
-    showToast("Enter your new email address.");
-    return;
-  }
+  if (!email) return showToast("Enter your new email.");
 
   try {
     const result = await settingsRequest("change-email", {email});
-
     showToast(result.message || "Check your email for verification.");
     $("newEmail").value = "";
-
   } catch (error) {
     showToast(error.message);
   }
 });
 
-// ADD RECOVERY EMAIL
 $("addRecoveryEmail").addEventListener("click", async () => {
   const recoveryEmail = $("recoveryEmail").value.trim();
-
-  if (!recoveryEmail) {
-    showToast("Enter a recovery email address.");
-    return;
-  }
+  if (!recoveryEmail) return showToast("Enter a recovery email.");
 
   try {
     const result = await settingsRequest("add-recovery-email", {
       recoveryEmail
     });
-
     showToast(result.message || "Check your email for verification.");
-
   } catch (error) {
     showToast(error.message);
   }
 });
 
-// CHANGE PASSWORD
 $("changePassword").addEventListener("click", async () => {
   const currentPassword = $("currentPassword").value;
   const newPassword = $("newPassword").value;
   const confirmPassword = $("confirmPassword").value;
 
   if (!currentPassword || !newPassword || !confirmPassword) {
-    showToast("Please fill in all password fields.");
-    return;
+    return showToast("Fill in all password fields.");
   }
 
   if (newPassword.length < 8) {
-    showToast("New password must have at least 8 characters.");
-    return;
+    return showToast("New password needs at least 8 characters.");
   }
 
   if (newPassword !== confirmPassword) {
-    showToast("New passwords do not match.");
-    return;
+    return showToast("New passwords do not match.");
   }
 
   try {
@@ -1469,83 +1400,57 @@ $("changePassword").addEventListener("click", async () => {
     });
 
     showToast(result.message || "Password changed successfully.");
-
     $("currentPassword").value = "";
     $("newPassword").value = "";
     $("confirmPassword").value = "";
-
   } catch (error) {
     showToast(error.message);
   }
 });
 
-// NOTIFICATIONS
-const notificationToggle = $("notificationToggle");
+/* NOTIFICATIONS */
 
 try {
-  notificationToggle.checked =
+  $("notificationToggle").checked =
     localStorage.getItem("chatspace-notifications") === "on";
 } catch (error) {}
 
-notificationToggle.addEventListener("change", async () => {
-  if (notificationToggle.checked) {
+$("notificationToggle").addEventListener("change", async () => {
+  if ($("notificationToggle").checked) {
     if (!("Notification" in window)) {
-      notificationToggle.checked = false;
-      showToast("This browser does not support notifications.");
-      return;
+      $("notificationToggle").checked = false;
+      return showToast("Notifications are not supported.");
     }
 
     const permission = await Notification.requestPermission();
 
     if (permission !== "granted") {
-      notificationToggle.checked = false;
-      showToast("Notification permission was not granted.");
-      return;
+      $("notificationToggle").checked = false;
+      return showToast("Notification permission was not granted.");
     }
   }
 
-  try {
-    localStorage.setItem(
-      "chatspace-notifications",
-      notificationToggle.checked ? "on" : "off"
-    );
-  } catch (error) {}
+  localStorage.setItem(
+    "chatspace-notifications",
+    $("notificationToggle").checked ? "on" : "off"
+  );
 
-  showToast("Notification preference saved.");
+  showToast("Notification setting saved.");
 });
 
-// SETTINGS THEME
-const lightThemeToggle = $("lightThemeToggle");
-
-lightThemeToggle.checked =
-  document.body.classList.contains("light");
-
-lightThemeToggle.addEventListener("change", () => {
-  const theme = lightThemeToggle.checked ? "light" : "dark";
-  applyTheme(theme);
-
-  try {
-    localStorage.setItem("chatspace-theme", theme);
-  } catch (error) {}
-});
-
-// MESSAGE PREVIEW PRIVACY
-const previewToggle = $("previewToggle");
+/* PREVIEW PRIVACY */
 
 try {
-  previewToggle.checked =
+  $("previewToggle").checked =
     localStorage.getItem("chatspace-previews") !== "off";
 } catch (error) {}
 
-previewToggle.addEventListener("change", () => {
-  try {
-    localStorage.setItem(
-      "chatspace-previews",
-      previewToggle.checked ? "on" : "off"
-    );
-  } catch (error) {}
-
-  showToast("Preview preference saved.");
+$("previewToggle").addEventListener("change", () => {
+  localStorage.setItem(
+    "chatspace-previews",
+    $("previewToggle").checked ? "on" : "off"
+  );
+  showToast("Privacy setting saved.");
 });
 
 start();
