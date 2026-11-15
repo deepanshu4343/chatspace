@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChatSpace | Account</title>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <style>
 * { box-sizing: border-box; }
 
@@ -124,6 +126,29 @@ input:focus {
   cursor: pointer;
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: #9294ac;
+  font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #3b3d52;
+}
+
+.google-area {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
 .message {
   display: none;
   margin-top: 16px;
@@ -162,7 +187,6 @@ input:focus {
   font-size: 12px;
   margin-top: 6px;
 }
-
 </style>
 </head>
 
@@ -205,9 +229,7 @@ input:focus {
         required
       >
 
-      <label for="loginPassword">
-        Password
-      </label>
+      <label for="loginPassword">Password</label>
 
       <input
         id="loginPassword"
@@ -223,6 +245,12 @@ input:focus {
 
     </form>
 
+    <div class="divider">OR</div>
+
+    <div class="google-area">
+      <div id="googleLoginButton"></div>
+    </div>
+
     <button type="button" class="link" data-panel="forgot">
       Forgot password?
     </button>
@@ -235,9 +263,7 @@ input:focus {
 
     <form id="signupForm">
 
-      <label for="signupUsername">
-        Username
-      </label>
+      <label for="signupUsername">Username</label>
 
       <input
         id="signupUsername"
@@ -251,9 +277,7 @@ input:focus {
         required
       >
 
-      <label for="signupEmail">
-        Email address
-      </label>
+      <label for="signupEmail">Email address</label>
 
       <input
         id="signupEmail"
@@ -265,9 +289,7 @@ input:focus {
         required
       >
 
-      <label for="signupPhone">
-        Mobile number
-      </label>
+      <label for="signupPhone">Mobile number</label>
 
       <input
         id="signupPhone"
@@ -279,9 +301,7 @@ input:focus {
         required
       >
 
-      <p class="hint">
-        Enter your Indian mobile number.
-      </p>
+      <p class="hint">Enter your Indian mobile number.</p>
 
       <label for="signupPassword">
         Password (minimum 8 characters)
@@ -304,6 +324,16 @@ input:focus {
 
     </form>
 
+    <div class="divider">OR</div>
+
+    <div class="google-area">
+      <div id="googleSignupButton"></div>
+    </div>
+
+    <p class="hint" style="text-align:center">
+      You can also create an account with Google.
+    </p>
+
   </section>
 
   <!-- FORGOT PASSWORD -->
@@ -318,9 +348,7 @@ input:focus {
 
     <form id="forgotForm">
 
-      <label for="forgotEmail">
-        Email address
-      </label>
+      <label for="forgotEmail">Email address</label>
 
       <input
         id="forgotEmail"
@@ -350,9 +378,7 @@ input:focus {
 
     <form id="resetForm">
 
-      <label for="resetPassword">
-        New password
-      </label>
+      <label for="resetPassword">New password</label>
 
       <input
         id="resetPassword"
@@ -443,6 +469,78 @@ async function api(url, data) {
   return result;
 }
 
+// GOOGLE SIGN-IN
+
+async function handleGoogleCredential(response) {
+
+  clearMessage();
+
+  try {
+
+    const result = await api("/api/auth/google", {
+      credential: response.credential
+    });
+
+    showMessage("Google Sign-In successful!");
+
+    location.href = "/chat";
+
+  } catch (error) {
+
+    showMessage(error.message, "error");
+
+  }
+}
+
+window.handleGoogleCredential = handleGoogleCredential;
+
+// Render both Google buttons after Google's script loads.
+
+function initializeGoogleButtons() {
+
+  if (!window.google?.accounts?.id) {
+    return false;
+  }
+
+  const clientId =
+    "524584060968-661c0gmmn6hh9elf029hf119e5m5qcs3.apps.googleusercontent.com";
+
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleCredential,
+    auto_select: false
+  });
+
+  const options = {
+    type: "standard",
+    theme: "outline",
+    size: "large",
+    text: "continue_with",
+    shape: "rectangular",
+    width: 300
+  };
+
+  google.accounts.id.renderButton(
+    $("googleLoginButton"),
+    options
+  );
+
+  google.accounts.id.renderButton(
+    $("googleSignupButton"),
+    options
+  );
+
+  return true;
+}
+
+const googleScriptCheck = setInterval(() => {
+
+  if (initializeGoogleButtons()) {
+    clearInterval(googleScriptCheck);
+  }
+
+}, 300);
+
 // SIGNUP
 
 $("signupForm").addEventListener("submit", async (event) => {
@@ -481,7 +579,7 @@ $("signupForm").addEventListener("submit", async (event) => {
 
 });
 
-// LOGIN WITH USERNAME, EMAIL OR MOBILE
+// NORMAL LOGIN
 
 $("loginForm").addEventListener("submit", async (event) => {
 
@@ -592,10 +690,8 @@ $("resetForm").addEventListener("submit", async (event) => {
 async function checkPage() {
 
   if (resetToken) {
-
     showPanel("reset");
     return;
-
   }
 
   try {
