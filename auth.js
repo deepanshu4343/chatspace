@@ -21,35 +21,34 @@ db.exec(`
 `);
 
 const columns = db.prepare("PRAGMA table_info(users)").all();
-const hasColumn = (name) => columns.some((column) => column.name === name);
+const hasColumn = (name) =>
+  columns.some((column) => column.name === name);
 
-if (!hasColumn("email")) {
-  db.exec("ALTER TABLE users ADD COLUMN email TEXT COLLATE NOCASE");
+const migrations = [
+  ["email", "TEXT COLLATE NOCASE"],
+  ["email_verified", "INTEGER NOT NULL DEFAULT 0"],
+  ["verification_hash", "TEXT"],
+  ["verification_expires", "INTEGER"],
+  ["reset_hash", "TEXT"],
+  ["reset_expires", "INTEGER"],
+  ["phone", "TEXT"]
+];
+
+for (const [name, definition] of migrations) {
+  if (!hasColumn(name)) {
+    db.exec(`ALTER TABLE users ADD COLUMN ${name} ${definition}`);
+  }
 }
 
-if (!hasColumn("email_verified")) {
-  db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
-}
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique
+  ON users(email)
+  WHERE email IS NOT NULL;
 
-if (!hasColumn("verification_hash")) {
-  db.exec("ALTER TABLE users ADD COLUMN verification_hash TEXT");
-}
-
-if (!hasColumn("verification_expires")) {
-  db.exec("ALTER TABLE users ADD COLUMN verification_expires INTEGER");
-}
-
-if (!hasColumn("reset_hash")) {
-  db.exec("ALTER TABLE users ADD COLUMN reset_hash TEXT");
-}
-
-if (!hasColumn("reset_expires")) {
-  db.exec("ALTER TABLE users ADD COLUMN reset_expires INTEGER");
-}
-
-db.exec(
-  "CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users(email) WHERE email IS NOT NULL"
-);
+  CREATE UNIQUE INDEX IF NOT EXISTS users_phone_unique
+  ON users(phone)
+  WHERE phone IS NOT NULL;
+`);
 
 const sessionMiddleware = session({
   name: "chat.sid",
@@ -72,6 +71,18 @@ function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
+function normalizePhone(value) {
+  let phone = String(value || "").replace(/[\s\-()]/g, "");
+
+  if (phone.startsWith("+91")) {
+    phone = phone.slice(3);
+  } else if (phone.startsWith("91") && phone.length === 12) {
+    phone = phone.slice(2);
+  }
+
+  return /^\d{10}$/.test(phone) ? phone : "";
+}
+
 function baseUrl() {
   return (
     process.env.BASE_URL ||
@@ -79,7 +90,6 @@ function baseUrl() {
   ).replace(/\/$/, "");
 }
 
-// Email59 email service
 async function sendEmail(to, subject, text) {
   if (!process.env.EMAIL59_KEY) {
     throw new Error("EMAIL59_KEY is missing from the environment");
@@ -88,7 +98,7 @@ async function sendEmail(to, subject, text) {
   const response = await fetch("https://email59.com/v1/send", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.EMAIL59_KEY}`,
+      Authorization: `Bearer ${process.env.EMAIL59_KEY}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -128,12 +138,15 @@ function createLoginSession(req, user) {
 
 router.get("/me", (req, res) => {
   if (!req.session.user) {
-    return res.status(401).json({ error: "Please log in." });
+    return res.status(401).json({
+      error: "Please log in."
+    });
   }
 
   res.json({ user: req.session.user });
 });
 
+// SIGNUP
 router.post("/signup", async (req, res) => {
   try {
     const username = typeof req.body.username === "string"
@@ -144,13 +157,15 @@ router.post("/signup", async (req, res) => {
       ? req.body.email.trim().toLowerCase()
       : "";
 
+    const phone = normalizePhone(req.body.phone);
+
     const password = typeof req.body.password === "string"
       ? req.body.password
       : "";
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
       return res.status(400).json({
-        error: "Username 3–20 characters ka ho: letters, numbers, underscore."
+        error: "Username 3-20 characters ka hona chahiye."
       });
     }
 
@@ -160,19 +175,26 @@ router.post("/signup", async (req, res) => {
       });
     }
 
+    if (req.body.phone && !phone) {
+      return res.status(400).json({
+        error: "Valid 10-digit Indian mobile number enter karo."
+      });
+    }
+
     if (password.length < 8 || password.length > 72) {
       return res.status(400).json({
         error: "Password 8 se 72 characters ka hona chahiye."
       });
     }
 
-    const existing = db.prepare(
-      "SELECT id FROM users WHERE username = ? OR email = ?"
-    ).get(username, email);
+    const existing = db.prepare(`
+      SELECT id FROM users
+      WHERE username = ? OR email = ? OR phone = ?
+    `).get(username, email, phone || null);
 
     if (existing) {
       return res.status(409).json({
-        error: "Username ya email pehle se registered hai."
+        error: "Username, email ya mobile number already registered hai."
       });
     }
 
@@ -181,34 +203,43 @@ router.post("/signup", async (req, res) => {
 
     db.prepare(`
       INSERT INTO users
-        (username, email, password_hash, email_verified,
+        (username, email, phone, password_hash, email_verified,
          verification_hash, verification_expires)
-      VALUES (?, ?, ?, 0, ?, ?)
+      VALUES (?, ?, ?, ?, 0, ?, ?)
     `).run(
       username,
       email,
+      phone || null,
       passwordHash,
       hashToken(token),
       Date.now() + 30 * 60 * 1000
     );
 
-    const link = `${baseUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
+    const link =
+      `${baseUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
     try {
       await sendEmail(
         email,
-        "Verify your chat account",
-        `Hi ${username},\n\nVerify your email using this link (valid for 30 minutes):\n${link}\n\nIf you did not create this account, ignore this email.`
+        "Verify your ChatSpace account",
+        `Hi ${username},
+
+Verify your email using this link (valid for 30 minutes):
+
+${link}
+
+If you did not create this account, ignore this email.`
       );
     } catch (mailError) {
-      db.prepare(
-        "DELETE FROM users WHERE email = ? AND email_verified = 0"
-      ).run(email);
+      db.prepare(`
+        DELETE FROM users
+        WHERE email = ? AND email_verified = 0
+      `).run(email);
 
       console.error("Verification email error:", mailError.message);
 
       return res.status(500).json({
-        error: "Verification email nahi bhej paaye. Email settings check karo."
+        error: "Verification email nahi bhej paaye. Email address check karo."
       });
     }
 
@@ -225,6 +256,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+// EMAIL VERIFICATION
 router.get("/verify", (req, res) => {
   const token = typeof req.query.token === "string"
     ? req.query.token
@@ -243,7 +275,7 @@ router.get("/verify", (req, res) => {
 
   if (!user) {
     return res.status(400).json({
-      error: "Verification link invalid ya expire ho gaya. Naya account verification link maango."
+      error: "Verification link invalid ya expire ho gaya."
     });
   }
 
@@ -260,26 +292,37 @@ router.get("/verify", (req, res) => {
   });
 });
 
+// LOGIN WITH USERNAME, EMAIL OR MOBILE
 router.post("/login", async (req, res) => {
   try {
-    const username = typeof req.body.username === "string"
-      ? req.body.username.trim()
-      : "";
+    const identifier = typeof req.body.identifier === "string"
+      ? req.body.identifier.trim()
+      : typeof req.body.username === "string"
+        ? req.body.username.trim()
+        : "";
 
     const password = typeof req.body.password === "string"
       ? req.body.password
       : "";
 
+    if (!identifier || !password) {
+      return res.status(400).json({
+        error: "Username, email ya mobile number aur password enter karo."
+      });
+    }
+
+    const email = identifier.toLowerCase();
+    const phone = normalizePhone(identifier);
+
     const user = db.prepare(`
       SELECT id, username, password_hash, email_verified
-      FROM users WHERE username = ?
-    `).get(username);
+      FROM users
+      WHERE username = ? OR email = ? OR phone = ?
+    `).get(identifier, email, phone || null);
 
     if (!user) {
-      console.log("LOGIN DEBUG: User not found");
-
       return res.status(401).json({
-        error: "Username ya password galat hai."
+        error: "Login details ya password galat hain."
       });
     }
 
@@ -288,14 +331,9 @@ router.post("/login", async (req, res) => {
       user.password_hash
     );
 
-    console.log("LOGIN DEBUG:", {
-      userFound: true,
-      passwordMatches
-    });
-
     if (!passwordMatches) {
       return res.status(401).json({
-        error: "Username ya password galat hai."
+        error: "Login details ya password galat hain."
       });
     }
 
@@ -317,6 +355,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// FORGOT PASSWORD
 router.post("/forgot-password", async (req, res) => {
   const email = typeof req.body.email === "string"
     ? req.body.email.trim().toLowerCase()
@@ -350,14 +389,17 @@ router.post("/forgot-password", async (req, res) => {
       try {
         await sendEmail(
           user.email,
-          "Reset your chat password",
-          `Hi ${user.username},\n\nReset your password using this link (valid for 15 minutes):\n${link}\n\nIf you did not request this, ignore this email.`
+          "Reset your ChatSpace password",
+          `Hi ${user.username},
+
+Reset your password using this link (valid for 15 minutes):
+
+${link}
+
+If you did not request this, ignore this email.`
         );
       } catch (mailError) {
-        console.error(
-          "Password reset email error:",
-          mailError.message
-        );
+        console.error("Password reset email error:", mailError.message);
       }
     }
 
@@ -372,6 +414,7 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
+// RESET PASSWORD
 router.post("/reset-password", async (req, res) => {
   try {
     const token = typeof req.body.token === "string"
@@ -395,7 +438,7 @@ router.post("/reset-password", async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
-        error: "Reset link invalid ya expire ho gaya. Naya link request karo."
+        error: "Reset link invalid ya expire ho gaya."
       });
     }
 
@@ -422,6 +465,7 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+// LOGOUT
 router.post("/logout", (req, res) => {
   if (!req.session) {
     return res.json({ message: "Logged out." });
