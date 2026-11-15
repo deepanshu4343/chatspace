@@ -34,6 +34,7 @@ const columns = db.prepare("PRAGMA table_info(users)").all();
 const hasColumn = (name) =>
   columns.some((column) => column.name === name);
 
+
 const migrations = [
   ["email", "TEXT COLLATE NOCASE"],
   ["email_verified", "INTEGER NOT NULL DEFAULT 0"],
@@ -42,7 +43,14 @@ const migrations = [
   ["reset_hash", "TEXT"],
   ["reset_expires", "INTEGER"],
   ["phone", "TEXT"],
-  ["google_id", "TEXT"]
+  ["google_id", "TEXT"],
+  ["recovery_email", "TEXT COLLATE NOCASE"],
+  ["recovery_email_verified", "INTEGER NOT NULL DEFAULT 0"],
+  ["recovery_verification_hash", "TEXT"],
+  ["recovery_verification_expires", "INTEGER"],
+  ["pending_email", "TEXT COLLATE NOCASE"],
+  ["pending_email_hash", "TEXT"],
+  ["pending_email_expires", "INTEGER"]
 ];
 
 for (const [name, definition] of migrations) {
@@ -63,6 +71,9 @@ db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS users_google_id_unique
   ON users(google_id)
   WHERE google_id IS NOT NULL;
+  CREATE UNIQUE INDEX IF NOT EXISTS users_recovery_email_unique
+ON users(recovery_email)
+WHERE recovery_email IS NOT NULL;
 `);
 
 // --------------------------------------------------
@@ -723,6 +734,390 @@ function requireAuth(req, res, next) {
 // --------------------------------------------------
 // EXPORTS
 // --------------------------------------------------
+
+
+function validEmail(email) {
+  return (
+    typeof email === "string" &&
+    email.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  );
+}
+
+// GET /api/auth/settings
+router.get("/settings", requireAuth, (req, res) => {
+  const user = db.prepare(`
+    SELECT id, username, email, email_verified, phone,
+           recovery_email, recovery_email_verified, created_at
+    FROM users
+    WHERE id = ?
+  `).get(req.session.user.id);
+
+  if (!user) {
+    return res.status(404).json({ error: "Account not found." });
+  }
+
+  res.json({ user });
+});
+
+// POST /api/auth/change-username
+router.post("/change-username", requireAuth, (req, res) => {
+  const username = typeof req.body.username === "string"
+    ? req.body.username.trim()
+    : "";
+
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+    return res.status(400).json({
+      error: "Username must be 3-20 characters and use only letters, numbers or underscores."
+    });
+  }
+
+  const existing = db.prepare(`
+    SELECT id FROM users
+    WHERE username = ? AND id != ?
+  `).get(username, req.session.user.id);
+
+  if (existing) {
+    return res.status(409).json({
+      error: "That username is already taken."
+    });
+  }
+
+  db.prepare(`
+    UPDATE users SET username = ? WHERE id = ?
+  `).run(username, req.session.user.id);
+
+  req.session.user.username = username;
+
+  req.session.save((error) => {
+    if (error) {
+      console.error("Username session update error:", error.message);
+      return res.status(500).json({ error: "Could not update session." });
+    }
+
+    res.json({
+      message: "Username updated successfully.",
+      username
+    });
+  });
+});
+
+// POST /api/auth/change-email
+// The new email only becomes active after verification.
+router.post("/change-email", requireAuth, async (req, res) => {
+  const email = typeof req.body.email === "string"
+    ? req.body.email.trim().toLowerCase()
+    : "";
+
+  if (!validEmail(email)) {
+    return res.status(400).json({ error: "Enter a valid email address." });
+  }
+
+  const userId = req.session.user.id;
+
+  const user = db.prepare(`
+    SELECT email FROM users WHERE id = ?
+  `).get(userId);
+
+  if (!user) {
+    return res.status(404).json({ error: "Account not found." });
+  }
+
+  if (email === user.email) {
+    return res.status(400).json({
+      error: "This is already your current email."
+    });
+  }
+
+  const existing = db.prepare(`
+    SELECT id FROM users
+    WHERE (email = ? OR recovery_email = ?) AND id != ?
+  `).get(email, email, userId);
+
+  if (existing) {
+    return res.status(409).json({
+      error: "This email is already associated with another account."
+    });
+  }
+
+  const token = makeToken();
+
+  db.prepare(`
+    UPDATE users
+    SET pending_email = ?,
+        pending_email_hash = ?,
+        pending_email_expires = ?
+    WHERE id = ?
+  `).run(
+    email,
+    hashToken(token),
+    Date.now() + 30 * 60 * 1000,
+    userId
+  );
+
+  try {
+    const link =
+      `${baseUrl()}/api/auth/verify-change-email?token=${encodeURIComponent(token)}`;
+
+    await sendEmail(
+      email,
+      "Verify your new ChatSpace email",
+      `You requested to change your ChatSpace email.
+
+Verify the new address using this link (valid for 30 minutes):
+
+${link}
+
+If you did not request this change, ignore this email.`
+    );
+
+    res.json({
+      message: "Verification link sent to your new email address."
+    });
+  } catch (error) {
+    db.prepare(`
+      UPDATE users
+      SET pending_email = NULL,
+          pending_email_hash = NULL,
+          pending_email_expires = NULL
+      WHERE id = ?
+    `).run(userId);
+
+    console.error("Change email error:", error.message);
+    res.status(500).json({
+      error: "Could not send the verification email."
+    });
+  }
+});
+
+// GET /api/auth/verify-change-email
+router.get("/verify-change-email", (req, res) => {
+  const token = typeof req.query.token === "string"
+    ? req.query.token
+    : "";
+
+  const user = db.prepare(`
+    SELECT id, pending_email
+    FROM users
+    WHERE pending_email_hash = ?
+      AND pending_email_expires > ?
+  `).get(hashToken(token), Date.now());
+
+  if (!user) {
+    return res.status(400).send(
+      "This email verification link is invalid or expired."
+    );
+  }
+
+  const conflict = db.prepare(`
+    SELECT id FROM users
+    WHERE (email = ? OR recovery_email = ?) AND id != ?
+  `).get(user.pending_email, user.pending_email, user.id);
+
+  if (conflict) {
+    return res.status(409).send(
+      "This email is already associated with another account. Please contact support."
+    );
+  }
+
+  db.prepare(`
+    UPDATE users
+    SET email = pending_email,
+        email_verified = 1,
+        pending_email = NULL,
+        pending_email_hash = NULL,
+        pending_email_expires = NULL
+    WHERE id = ?
+  `).run(user.id);
+
+  res.send("Your ChatSpace email has been updated and verified. You can return to ChatSpace.");
+});
+
+// POST /api/auth/add-recovery-email
+router.post("/add-recovery-email", requireAuth, async (req, res) => {
+  const email = typeof req.body.email === "string"
+    ? req.body.email.trim().toLowerCase()
+    : "";
+
+  if (!validEmail(email)) {
+    return res.status(400).json({ error: "Enter a valid recovery email." });
+  }
+
+  const userId = req.session.user.id;
+
+  const existing = db.prepare(`
+    SELECT id FROM users
+    WHERE (email = ? OR recovery_email = ?) AND id != ?
+  `).get(email, email, userId);
+
+  if (existing) {
+    return res.status(409).json({
+      error: "This email is already associated with another account."
+    });
+  }
+
+  const user = db.prepare(`
+    SELECT email FROM users WHERE id = ?
+  `).get(userId);
+
+  if (!user) {
+    return res.status(404).json({ error: "Account not found." });
+  }
+
+  if (email === user.email) {
+    return res.status(400).json({
+      error: "Recovery email must be different from your main email."
+    });
+  }
+
+  const token = makeToken();
+
+  db.prepare(`
+    UPDATE users
+    SET recovery_email = ?,
+        recovery_email_verified = 0,
+        recovery_verification_hash = ?,
+        recovery_verification_expires = ?
+    WHERE id = ?
+  `).run(
+    email,
+    hashToken(token),
+    Date.now() + 30 * 60 * 1000,
+    userId
+  );
+
+  try {
+    const link =
+      `${baseUrl()}/api/auth/verify-recovery-email?token=${encodeURIComponent(token)}`;
+
+    await sendEmail(
+      email,
+      "Verify your ChatSpace recovery email",
+      `Verify this address as your ChatSpace recovery email using this link (valid for 30 minutes):
+
+${link}
+
+If you did not request this, ignore this email.`
+    );
+
+    res.json({
+      message: "Recovery email verification link sent."
+    });
+  } catch (error) {
+    db.prepare(`
+      UPDATE users
+      SET recovery_email = NULL,
+          recovery_email_verified = 0,
+          recovery_verification_hash = NULL,
+          recovery_verification_expires = NULL
+      WHERE id = ?
+    `).run(userId);
+
+    console.error("Recovery email error:", error.message);
+    res.status(500).json({
+      error: "Could not send the recovery email."
+    });
+  }
+});
+
+// GET /api/auth/verify-recovery-email
+router.get("/verify-recovery-email", (req, res) => {
+  const token = typeof req.query.token === "string"
+    ? req.query.token
+    : "";
+
+  const user = db.prepare(`
+    SELECT id, recovery_email
+    FROM users
+    WHERE recovery_verification_hash = ?
+      AND recovery_verification_expires > ?
+  `).get(hashToken(token), Date.now());
+
+  if (!user) {
+    return res.status(400).send(
+      "This recovery email verification link is invalid or expired."
+    );
+  }
+
+  const conflict = db.prepare(`
+    SELECT id FROM users
+    WHERE (email = ? OR recovery_email = ?) AND id != ?
+  `).get(user.recovery_email, user.recovery_email, user.id);
+
+  if (conflict) {
+    return res.status(409).send(
+      "This email is already associated with another account."
+    );
+  }
+
+  db.prepare(`
+    UPDATE users
+    SET recovery_email_verified = 1,
+        recovery_verification_hash = NULL,
+        recovery_verification_expires = NULL
+    WHERE id = ?
+  `).run(user.id);
+
+  res.send("Your ChatSpace recovery email has been verified.");
+});
+
+// POST /api/auth/change-password
+router.post("/change-password", requireAuth, async (req, res) => {
+  try {
+    const currentPassword =
+      typeof req.body.currentPassword === "string"
+        ? req.body.currentPassword
+        : "";
+
+    const newPassword =
+      typeof req.body.newPassword === "string"
+        ? req.body.newPassword
+        : "";
+
+    if (newPassword.length < 8 || newPassword.length > 72) {
+      return res.status(400).json({
+        error: "New password must be 8-72 characters."
+      });
+    }
+
+    const user = db.prepare(`
+      SELECT password_hash FROM users WHERE id = ?
+    `).get(req.session.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Account not found." });
+    }
+
+    const matches = await bcrypt.compare(
+      currentPassword,
+      user.password_hash
+    );
+
+    if (!matches) {
+      return res.status(401).json({
+        error: "Current password is incorrect."
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    db.prepare(`
+      UPDATE users
+      SET password_hash = ?,
+          reset_hash = NULL,
+          reset_expires = NULL
+      WHERE id = ?
+    `).run(passwordHash, req.session.user.id);
+
+    res.json({ message: "Password changed successfully." });
+
+  } catch (error) {
+    console.error("Change password error:", error.message);
+    res.status(500).json({
+      error: "Could not change your password."
+    });
+  }
+});
 
 module.exports = {
   router,
