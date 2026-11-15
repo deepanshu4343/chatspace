@@ -7,9 +7,18 @@ const Database = require("better-sqlite3");
 const session = require("express-session");
 const crypto = require("crypto");
 const path = require("path");
+const { OAuth2Client } = require("google-auth-library");
 
 const router = express.Router();
 const db = new Database(path.join(__dirname, "users.db"));
+
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
+
+// --------------------------------------------------
+// DATABASE
+// --------------------------------------------------
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -21,6 +30,7 @@ db.exec(`
 `);
 
 const columns = db.prepare("PRAGMA table_info(users)").all();
+
 const hasColumn = (name) =>
   columns.some((column) => column.name === name);
 
@@ -31,7 +41,8 @@ const migrations = [
   ["verification_expires", "INTEGER"],
   ["reset_hash", "TEXT"],
   ["reset_expires", "INTEGER"],
-  ["phone", "TEXT"]
+  ["phone", "TEXT"],
+  ["google_id", "TEXT"]
 ];
 
 for (const [name, definition] of migrations) {
@@ -48,7 +59,15 @@ db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS users_phone_unique
   ON users(phone)
   WHERE phone IS NOT NULL;
+
+  CREATE UNIQUE INDEX IF NOT EXISTS users_google_id_unique
+  ON users(google_id)
+  WHERE google_id IS NOT NULL;
 `);
+
+// --------------------------------------------------
+// SESSION
+// --------------------------------------------------
 
 const sessionMiddleware = session({
   name: "chat.sid",
@@ -62,6 +81,10 @@ const sessionMiddleware = session({
     maxAge: 7 * 24 * 60 * 60 * 1000
   }
 });
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function makeToken() {
   return crypto.randomBytes(32).toString("hex");
@@ -136,6 +159,37 @@ function createLoginSession(req, user) {
   });
 }
 
+// Creates an available username for a new Google account.
+function generateGoogleUsername(email) {
+  let base = email
+    .split("@")[0]
+    .replace(/[^a-zA-Z0-9_]/g, "")
+    .slice(0, 14);
+
+  if (base.length < 3) {
+    base = "user";
+  }
+
+  for (let i = 0; i < 30; i++) {
+    const suffix = crypto.randomInt(1000, 99999);
+    const username = `${base}_${suffix}`.slice(0, 20);
+
+    const exists = db.prepare(`
+      SELECT id FROM users WHERE username = ?
+    `).get(username);
+
+    if (!exists) {
+      return username;
+    }
+  }
+
+  throw new Error("Could not generate a unique username");
+}
+
+// --------------------------------------------------
+// CURRENT USER
+// --------------------------------------------------
+
 router.get("/me", (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({
@@ -143,10 +197,146 @@ router.get("/me", (req, res) => {
     });
   }
 
-  res.json({ user: req.session.user });
+  res.json({
+    user: req.session.user
+  });
 });
 
+// --------------------------------------------------
+// GOOGLE SIGN-IN
+// POST /api/auth/google
+// --------------------------------------------------
+
+router.post("/google", async (req, res) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error("GOOGLE_CLIENT_ID is missing");
+
+      return res.status(500).json({
+        error: "Google Sign-In is not configured."
+      });
+    }
+
+    const credential =
+      typeof req.body.credential === "string"
+        ? req.body.credential
+        : "";
+
+    if (!credential) {
+      return res.status(400).json({
+        error: "Google credential missing."
+      });
+    }
+
+    // Verify the Google ID token.
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    if (
+      !payload ||
+      !payload.sub ||
+      !payload.email ||
+      payload.email_verified !== true
+    ) {
+      return res.status(401).json({
+        error: "Google account could not be verified."
+      });
+    }
+
+    const googleId = payload.sub;
+    const email = payload.email.trim().toLowerCase();
+
+    // First, look for an account already linked to this Google ID.
+    let user = db.prepare(`
+      SELECT id, username, email, google_id
+      FROM users
+      WHERE google_id = ?
+    `).get(googleId);
+
+    if (!user) {
+      // Check whether this email already has a ChatSpace account.
+      user = db.prepare(`
+        SELECT id, username, email, google_id
+        FROM users
+        WHERE email = ?
+      `).get(email);
+
+      if (user) {
+        // Do not link an email already connected to another Google account.
+        if (user.google_id && user.google_id !== googleId) {
+          return res.status(409).json({
+            error: "This email is linked to another Google account."
+          });
+        }
+
+        // Link the verified Google account to the existing ChatSpace account.
+        db.prepare(`
+          UPDATE users
+          SET google_id = ?,
+              email_verified = 1
+          WHERE id = ?
+        `).run(googleId, user.id);
+
+      } else {
+        // Create a new Google-only ChatSpace account.
+        const username = generateGoogleUsername(email);
+
+        // This random password is never shown to or requested from the user.
+        const randomPassword = crypto.randomBytes(32).toString("hex");
+        const passwordHash = await bcrypt.hash(randomPassword, 12);
+
+        const result = db.prepare(`
+          INSERT INTO users (
+            username,
+            email,
+            password_hash,
+            email_verified,
+            google_id
+          )
+          VALUES (?, ?, ?, 1, ?)
+        `).run(
+          username,
+          email,
+          passwordHash,
+          googleId
+        );
+
+        user = {
+          id: Number(result.lastInsertRowid),
+          username,
+          email,
+          google_id: googleId
+        };
+      }
+    }
+
+    await createLoginSession(req, user);
+
+    return res.json({
+      message: "Google Sign-In successful.",
+      user: {
+        id: user.id,
+        username: user.username
+      }
+    });
+
+  } catch (error) {
+    console.error("Google Sign-In error:", error.message);
+
+    return res.status(401).json({
+      error: "Google Sign-In failed. Please try again."
+    });
+  }
+});
+
+// --------------------------------------------------
 // SIGNUP
+// --------------------------------------------------
+
 router.post("/signup", async (req, res) => {
   try {
     const username = typeof req.body.username === "string"
@@ -169,7 +359,10 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      email.length > 254
+    ) {
       return res.status(400).json({
         error: "Valid email address enter karo."
       });
@@ -202,9 +395,15 @@ router.post("/signup", async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
 
     db.prepare(`
-      INSERT INTO users
-        (username, email, phone, password_hash, email_verified,
-         verification_hash, verification_expires)
+      INSERT INTO users (
+        username,
+        email,
+        phone,
+        password_hash,
+        email_verified,
+        verification_hash,
+        verification_expires
+      )
       VALUES (?, ?, ?, ?, 0, ?, ?)
     `).run(
       username,
@@ -230,6 +429,7 @@ ${link}
 
 If you did not create this account, ignore this email.`
       );
+
     } catch (mailError) {
       db.prepare(`
         DELETE FROM users
@@ -256,7 +456,10 @@ If you did not create this account, ignore this email.`
   }
 });
 
+// --------------------------------------------------
 // EMAIL VERIFICATION
+// --------------------------------------------------
+
 router.get("/verify", (req, res) => {
   const token = typeof req.query.token === "string"
     ? req.query.token
@@ -272,7 +475,7 @@ router.get("/verify", (req, res) => {
     SELECT id FROM users
     WHERE verification_hash = ? AND verification_expires > ?
   `).get(hashToken(token), Date.now());
-console.log("LOGIN CHECK - User found:", Boolean(user));
+
   if (!user) {
     return res.status(400).json({
       error: "Verification link invalid ya expire ho gaya."
@@ -292,7 +495,11 @@ console.log("LOGIN CHECK - User found:", Boolean(user));
   });
 });
 
-// LOGIN WITH USERNAME, EMAIL OR MOBILE
+// --------------------------------------------------
+// NORMAL LOGIN
+// Username, email or mobile + ChatSpace password
+// --------------------------------------------------
+
 router.post("/login", async (req, res) => {
   try {
     const identifier = typeof req.body.identifier === "string"
@@ -330,7 +537,7 @@ router.post("/login", async (req, res) => {
       password,
       user.password_hash
     );
-console.log("LOGIN CHECK - Password matches:", passwordMatches);
+
     if (!passwordMatches) {
       return res.status(401).json({
         error: "Login details ya password galat hain."
@@ -355,7 +562,10 @@ console.log("LOGIN CHECK - Password matches:", passwordMatches);
   }
 });
 
+// --------------------------------------------------
 // FORGOT PASSWORD
+// --------------------------------------------------
+
 router.post("/forgot-password", async (req, res) => {
   const email = typeof req.body.email === "string"
     ? req.body.email.trim().toLowerCase()
@@ -367,7 +577,8 @@ router.post("/forgot-password", async (req, res) => {
 
   try {
     const user = db.prepare(`
-      SELECT id, username, email FROM users
+      SELECT id, username, email
+      FROM users
       WHERE email = ? AND email_verified = 1
     `).get(email);
 
@@ -398,6 +609,7 @@ ${link}
 
 If you did not request this, ignore this email.`
         );
+
       } catch (mailError) {
         console.error("Password reset email error:", mailError.message);
       }
@@ -414,7 +626,10 @@ If you did not request this, ignore this email.`
   }
 });
 
+// --------------------------------------------------
 // RESET PASSWORD
+// --------------------------------------------------
+
 router.post("/reset-password", async (req, res) => {
   try {
     const token = typeof req.body.token === "string"
@@ -465,10 +680,15 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+// --------------------------------------------------
 // LOGOUT
+// --------------------------------------------------
+
 router.post("/logout", (req, res) => {
   if (!req.session) {
-    return res.json({ message: "Logged out." });
+    return res.json({
+      message: "Logged out."
+    });
   }
 
   req.session.destroy((error) => {
@@ -486,6 +706,10 @@ router.post("/logout", (req, res) => {
   });
 });
 
+// --------------------------------------------------
+// AUTHENTICATION MIDDLEWARE
+// --------------------------------------------------
+
 function requireAuth(req, res, next) {
   if (!req.session?.user) {
     return res.status(401).json({
@@ -495,6 +719,10 @@ function requireAuth(req, res, next) {
 
   next();
 }
+
+// --------------------------------------------------
+// EXPORTS
+// --------------------------------------------------
 
 module.exports = {
   router,
