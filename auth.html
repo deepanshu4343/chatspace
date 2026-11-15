@@ -2,336 +2,624 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatSpace | Account</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatSpace | Account</title>
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      color: #f4f4f5;
-      background: radial-gradient(circle at top, #23325c, #10111b 55%);
-    }
+<style>
+* { box-sizing: border-box; }
 
-    .card {
-      width: 100%;
-      max-width: 420px;
-      padding: 30px;
-      border: 1px solid #34364b;
-      border-radius: 20px;
-      background: rgba(22, 23, 38, .96);
-      box-shadow: 0 20px 70px #0005;
-    }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #f4f4f5;
+  background: radial-gradient(circle at top, #23325c, #10111b 55%);
+}
 
-    .logo { text-align: center; font-size: 38px; }
-    h1 { text-align: center; margin: 10px 0 8px; }
-    .subtitle { text-align: center; color: #a5a7bd; margin-bottom: 24px; }
+.card {
+  width: 100%;
+  max-width: 430px;
+  padding: 30px;
+  border: 1px solid #34364b;
+  border-radius: 20px;
+  background: rgba(22, 23, 38, .96);
+  box-shadow: 0 20px 70px #0005;
+}
 
-    .tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+.logo {
+  text-align: center;
+  font-size: 42px;
+}
 
-    button, input { font: inherit; }
+h1 {
+  text-align: center;
+  margin: 10px 0 8px;
+}
 
-    .tabs button {
-      flex: 1;
-      padding: 11px;
-      border: 1px solid #3c3e53;
-      border-radius: 9px;
-      color: #ddd;
-      background: #242538;
-      cursor: pointer;
-    }
+.subtitle {
+  text-align: center;
+  color: #a5a7bd;
+  margin-bottom: 24px;
+}
 
-    .tabs button.active {
-      background: #6c63ff;
-      border-color: #6c63ff;
-      color: white;
-    }
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 22px;
+}
 
-    label { display: block; margin: 14px 0 7px; color: #d7d8e6; font-size: 14px; }
+button, input {
+  font: inherit;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #3b3d52;
-      border-radius: 9px;
-      outline: none;
-      color: white;
-      background: #11121f;
-    }
+.tabs button {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid #3c3e53;
+  border-radius: 9px;
+  color: #ddd;
+  background: #242538;
+  cursor: pointer;
+}
 
-    input:focus { border-color: #827bff; }
+.tabs button.active {
+  background: #6c63ff;
+  border-color: #6c63ff;
+  color: white;
+}
 
-    .primary {
-      width: 100%;
-      padding: 13px;
-      margin-top: 20px;
-      border: 0;
-      border-radius: 9px;
-      background: #6c63ff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+label {
+  display: block;
+  margin: 14px 0 7px;
+  color: #d7d8e6;
+  font-size: 14px;
+}
 
-    .primary:hover { background: #8179ff; }
-    .primary:disabled { opacity: .6; cursor: wait; }
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #3b3d52;
+  border-radius: 9px;
+  outline: none;
+  color: white;
+  background: #11121f;
+}
 
-    .link {
-      display: block;
-      margin-top: 16px;
-      text-align: center;
-      color: #aaa5ff;
-      background: none;
-      border: 0;
-      cursor: pointer;
-    }
+input:focus {
+  border-color: #827bff;
+}
 
-    .message {
-      display: none;
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 9px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-      background: #292a3d;
-    }
+.primary {
+  width: 100%;
+  padding: 13px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 9px;
+  background: #6c63ff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    .message.show { display: block; }
-    .message.error { color: #ffb4b4; }
-    .message.success { color: #a7f3c0; }
+.primary:hover {
+  background: #8179ff;
+}
 
-    .panel[hidden] { display: none; }
+.primary:disabled {
+  opacity: .6;
+  cursor: wait;
+}
 
-    .small { color: #9294ac; font-size: 12px; line-height: 1.5; margin-top: 18px; }
-  </style>
+.link {
+  display: block;
+  margin-top: 16px;
+  text-align: center;
+  color: #aaa5ff;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.message {
+  display: none;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 9px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  background: #292a3d;
+}
+
+.message.show {
+  display: block;
+}
+
+.message.error {
+  color: #ffb4b4;
+}
+
+.message.success {
+  color: #a7f3c0;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.small {
+  color: #9294ac;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 18px;
+}
+
+.hint {
+  color: #9294ac;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+</style>
 </head>
+
 <body>
-  <main class="card">
-    <div class="logo">💬</div>
-    <h1>ChatSpace</h1>
-    <p class="subtitle">Connect with people in real time</p>
 
-    <div class="tabs" id="tabs">
-      <button type="button" class="active" data-panel="login">Login</button>
-      <button type="button" data-panel="signup">Sign up</button>
-    </div>
+<main class="card">
 
-    <section class="panel" id="login">
-      <form id="loginForm">
-        <label for="loginUsername">Username</label>
-        <input id="loginUsername" name="username" autocomplete="username" required maxlength="20">
+  <div class="logo">💬</div>
 
-        <label for="loginPassword">Password</label>
-        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+  <h1>ChatSpace</h1>
 
-        <button class="primary" type="submit">Login to Chat</button>
-      </form>
-      <button type="button" class="link" data-panel="forgot">Forgot password?</button>
-    </section>
+  <p class="subtitle">Connect with people in real time</p>
 
-    <section class="panel" id="signup" hidden>
-      <form id="signupForm">
-        <label for="signupUsername">Username</label>
-        <input id="signupUsername" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" required>
-        
-        <label for="signupEmail">Email address</label>
-        <input id="signupEmail" name="email" type="email" autocomplete="email" maxlength="254" required>
+  <div class="tabs" id="tabs">
+    <button type="button" class="active" data-panel="login">
+      Login
+    </button>
 
-        <label for="signupPassword">Password (minimum 8 characters)</label>
-        <input id="signupPassword" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+    <button type="button" data-panel="signup">
+      Sign up
+    </button>
+  </div>
 
-        <button class="primary" type="submit">Create Account</button>
-      </form>
-    </section>
+  <!-- LOGIN -->
 
-    <section class="panel" id="forgot" hidden>
-      <h2>Forgot password?</h2>
-      <p class="subtitle">Enter your registered email address.</p>
-      <form id="forgotForm">
-        <label for="forgotEmail">Email address</label>
-        <input id="forgotEmail" name="email" type="email" autocomplete="email" required>
-        <button class="primary" type="submit">Send Reset Link</button>
-      </form>
-      <button type="button" class="link" data-panel="login">Back to login</button>
-    </section>
+  <section class="panel" id="login">
 
-    <section class="panel" id="reset" hidden>
-      <h2>Choose a new password</h2>
-      <form id="resetForm">
-        <label for="resetPassword">New password</label>
-        <input id="resetPassword" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
-        <button class="primary" type="submit">Reset Password</button>
-      </form>
-    </section>
+    <form id="loginForm">
 
-    <div id="message" class="message" role="status" aria-live="polite"></div>
-    <p class="small">Keep your password private. Never share verification or reset links with anyone.</p>
-  </main>
+      <label for="loginIdentifier">
+        Username / Email / Mobile Number
+      </label>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const messageBox = $("message");
-    let resetToken = new URLSearchParams(location.search).get("reset");
+      <input
+        id="loginIdentifier"
+        name="identifier"
+        type="text"
+        placeholder="Enter username, email or mobile"
+        autocomplete="username"
+        required
+      >
 
-    function showMessage(text, type = "success") {
-      messageBox.textContent = text;
-      messageBox.className = `message show ${type}`;
-    }
+      <label for="loginPassword">
+        Password
+      </label>
 
-    function clearMessage() {
-      messageBox.textContent = "";
-      messageBox.className = "message";
-    }
+      <input
+        id="loginPassword"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      >
 
-    function showPanel(name) {
-      document.querySelectorAll(".panel").forEach(panel => {
-        panel.hidden = panel.id !== name;
-      });
+      <button class="primary" type="submit">
+        Login to Chat
+      </button>
 
-      $("tabs").hidden = name === "forgot" || name === "reset";
+    </form>
 
-      document.querySelectorAll("[data-panel]").forEach(button => {
-        if (button.closest("#tabs")) {
-          button.classList.toggle("active", button.dataset.panel === name);
-        }
-      });
+    <button type="button" class="link" data-panel="forgot">
+      Forgot password?
+    </button>
 
-      clearMessage();
-    }
+  </section>
 
-    document.querySelectorAll("[data-panel]").forEach(button => {
-      button.addEventListener("click", () => showPanel(button.dataset.panel));
+  <!-- SIGNUP -->
+
+  <section class="panel" id="signup" hidden>
+
+    <form id="signupForm">
+
+      <label for="signupUsername">
+        Username
+      </label>
+
+      <input
+        id="signupUsername"
+        name="username"
+        type="text"
+        placeholder="Choose a username"
+        autocomplete="username"
+        minlength="3"
+        maxlength="20"
+        pattern="[A-Za-z0-9_]+"
+        required
+      >
+
+      <label for="signupEmail">
+        Email address
+      </label>
+
+      <input
+        id="signupEmail"
+        name="email"
+        type="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+        maxlength="254"
+        required
+      >
+
+      <label for="signupPhone">
+        Mobile number
+      </label>
+
+      <input
+        id="signupPhone"
+        name="phone"
+        type="tel"
+        placeholder="e.g. 9876543210 or +919876543210"
+        autocomplete="tel"
+        pattern="[+]?[0-9\s()-]{10,16}"
+        required
+      >
+
+      <p class="hint">
+        Enter your Indian mobile number.
+      </p>
+
+      <label for="signupPassword">
+        Password (minimum 8 characters)
+      </label>
+
+      <input
+        id="signupPassword"
+        name="password"
+        type="password"
+        placeholder="Create a password"
+        autocomplete="new-password"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+
+      <button class="primary" type="submit">
+        Create Account
+      </button>
+
+    </form>
+
+  </section>
+
+  <!-- FORGOT PASSWORD -->
+
+  <section class="panel" id="forgot" hidden>
+
+    <h2>Forgot password?</h2>
+
+    <p class="subtitle">
+      Enter your registered email address.
+    </p>
+
+    <form id="forgotForm">
+
+      <label for="forgotEmail">
+        Email address
+      </label>
+
+      <input
+        id="forgotEmail"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+      >
+
+      <button class="primary" type="submit">
+        Send Reset Link
+      </button>
+
+    </form>
+
+    <button type="button" class="link" data-panel="login">
+      Back to login
+    </button>
+
+  </section>
+
+  <!-- RESET PASSWORD -->
+
+  <section class="panel" id="reset" hidden>
+
+    <h2>Choose a new password</h2>
+
+    <form id="resetForm">
+
+      <label for="resetPassword">
+        New password
+      </label>
+
+      <input
+        id="resetPassword"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+
+      <button class="primary" type="submit">
+        Reset Password
+      </button>
+
+    </form>
+
+  </section>
+
+  <div id="message" class="message" role="status"
+       aria-live="polite"></div>
+
+  <p class="small">
+    Keep your password private. Never share verification or reset links.
+  </p>
+
+</main>
+
+<script>
+
+const $ = (id) => document.getElementById(id);
+
+const messageBox = $("message");
+
+let resetToken = new URLSearchParams(location.search).get("reset");
+
+function showMessage(text, type = "success") {
+  messageBox.textContent = text;
+  messageBox.className = `message show ${type}`;
+}
+
+function clearMessage() {
+  messageBox.textContent = "";
+  messageBox.className = "message";
+}
+
+function showPanel(name) {
+
+  document.querySelectorAll(".panel").forEach(panel => {
+    panel.hidden = panel.id !== name;
+  });
+
+  $("tabs").hidden = name === "forgot" || name === "reset";
+
+  document.querySelectorAll("#tabs button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.panel === name
+    );
+  });
+
+  clearMessage();
+}
+
+document.querySelectorAll("[data-panel]").forEach(button => {
+  button.addEventListener("click", () => {
+    showPanel(button.dataset.panel);
+  });
+});
+
+async function api(url, data) {
+
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.error || "Request failed.");
+  }
+
+  return result;
+}
+
+// SIGNUP
+
+$("signupForm").addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const button = event.submitter;
+  button.disabled = true;
+
+  try {
+
+    const data = Object.fromEntries(
+      new FormData(event.currentTarget)
+    );
+
+    const result = await api("/api/auth/signup", data);
+
+    showPanel("login");
+
+    showMessage(
+      result.message ||
+      "Account created. Check your email to verify it."
+    );
+
+    $("loginIdentifier").value = data.username;
+
+  } catch (error) {
+
+    showMessage(error.message, "error");
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
+});
+
+// LOGIN WITH USERNAME, EMAIL OR MOBILE
+
+$("loginForm").addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const button = event.submitter;
+  button.disabled = true;
+
+  try {
+
+    const data = Object.fromEntries(
+      new FormData(event.currentTarget)
+    );
+
+    await api("/api/auth/login", data);
+
+    location.href = "/chat";
+
+  } catch (error) {
+
+    showMessage(error.message, "error");
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
+});
+
+// FORGOT PASSWORD
+
+$("forgotForm").addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const button = event.submitter;
+  button.disabled = true;
+
+  try {
+
+    const data = Object.fromEntries(
+      new FormData(event.currentTarget)
+    );
+
+    const result = await api(
+      "/api/auth/forgot-password",
+      data
+    );
+
+    showMessage(result.message);
+
+  } catch (error) {
+
+    showMessage(error.message, "error");
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
+});
+
+// RESET PASSWORD
+
+$("resetForm").addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const button = event.submitter;
+  button.disabled = true;
+
+  try {
+
+    const password = $("resetPassword").value;
+
+    const result = await api(
+      "/api/auth/reset-password",
+      {
+        token: resetToken,
+        password
+      }
+    );
+
+    history.replaceState({}, "", "/");
+
+    resetToken = null;
+
+    showPanel("login");
+
+    showMessage(result.message);
+
+  } catch (error) {
+
+    showMessage(error.message, "error");
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
+});
+
+// CHECK EXISTING SESSION AND RESET LINK
+
+async function checkPage() {
+
+  if (resetToken) {
+
+    showPanel("reset");
+    return;
+
+  }
+
+  try {
+
+    const response = await fetch("/api/auth/me", {
+      credentials: "same-origin"
     });
 
-    async function api(url, data) {
-      const response = await fetch(url, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || "Request failed.");
-      return result;
+    if (response.ok) {
+      location.href = "/chat";
+      return;
     }
 
-    $("signupForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = event.submitter;
-      button.disabled = true;
+  } catch (error) {
+    console.log("Session check failed:", error.message);
+  }
 
-      try {
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        const result = await api("/api/auth/signup", data);
-        showPanel("login");
-        showMessage(result.message || "Account created. Check your email to verify it.");
-        $("loginUsername").value = data.username;
-      } catch (error) {
-        showMessage(error.message, "error");
-      } finally {
-        button.disabled = false;
-      }
-    });
+  showPanel("login");
 
-    $("loginForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = event.submitter;
-      button.disabled = true;
+}
 
-      try {
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        await api("/api/auth/login", data);
-        location.href = "/chat";
-      } catch (error) {
-        showMessage(error.message, "error");
-      } finally {
-        button.disabled = false;
-      }
-    });
+checkPage();
 
-    $("forgotForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = event.submitter;
-      button.disabled = true;
+</script>
 
-      try {
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        const result = await api("/api/auth/forgot-password", data);
-        showMessage(result.message);
-      } catch (error) {
-        showMessage(error.message, "error");
-      } finally {
-        button.disabled = false;
-      }
-    });
-
-    $("resetForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = event.submitter;
-      button.disabled = true;
-
-      try {
-        const password = $("resetPassword").value;
-        const result = await api("/api/auth/reset-password", {
-          token: resetToken,
-          password
-        });
-
-        history.replaceState({}, "", "/");
-        resetToken = null;
-        showPanel("login");
-        showMessage(result.message);
-      } catch (error) {
-        showMessage(error.message, "error");
-      } finally {
-        button.disabled = false;
-      }
-    });
-
-    async function checkVerification() {
-      const params = new URLSearchParams(location.search);
-      const token = params.get("verify");
-
-      if (token) {
-        try {
-          const response = await fetch(
-            `/api/auth/verify?token=${encodeURIComponent(token)}`,
-            { credentials: "same-origin" }
-          );
-          const result = await response.json();
-
-          history.replaceState({}, "", "/");
-          showPanel("login");
-          showMessage(
-            response.ok ? result.message : (result.error || "Verification failed."),
-            response.ok ? "success" : "error"
-          );
-        } catch {
-          showMessage("Verification request failed. Please try again.", "error");
-        }
-      } else if (resetToken) {
-        showPanel("reset");
-      } else {
-        // If an account session already exists, skip the login screen.
-        try {
-          const response = await fetch("/api/auth/me", {
-            credentials: "same-origin"
-          });
-          if (response.ok) location.href = "/chat";
-        } catch {
-          // The login form remains available if the server is offline.
-        }
-      }
-    }
-
-    checkVerification();
-  </script>
 </body>
 </html>
