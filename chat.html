@@ -494,6 +494,63 @@ header {
   .settings-overlay {padding:8px}
   .settings-panel {max-height:95vh;padding:15px}
 }
+
+.message-tools {
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+
+.message-tools button,
+.reaction-list button {
+  background:var(--input);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:5px 9px;
+  font-size:12px;
+}
+
+.message-tools button:hover,
+.reaction-list button:hover {
+  border-color:var(--accent);
+}
+
+.reaction-list {
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+
+.reply-preview {
+  background:var(--input);
+  border-left:3px solid var(--accent);
+  padding:7px 10px;
+  border-radius:6px;
+  margin-bottom:7px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+#replyBar {
+  display:none;
+  padding:9px 14px;
+  background:var(--header);
+  border-top:1px solid var(--border);
+  color:var(--accent);
+  font-size:13px;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#cancelReply {
+  background:transparent;
+  border:0;
+  color:var(--text);
+  font-size:18px;
+}
 </style>
 </head>
 
