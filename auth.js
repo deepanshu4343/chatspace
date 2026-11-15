@@ -804,6 +804,7 @@ router.post("/change-username", requireAuth, (req, res) => {
 
 // POST /api/auth/change-email
 // The new email only becomes active after verification.
+
 router.post("/change-email", requireAuth, async (req, res) => {
   const email = typeof req.body.email === "string"
     ? req.body.email.trim().toLowerCase()
@@ -839,7 +840,6 @@ router.post("/change-email", requireAuth, async (req, res) => {
       error: "This email is already associated with another account."
     });
   }
-
   const token = makeToken();
 
   db.prepare(`
