@@ -162,28 +162,20 @@ aside {
 }
 
 .contact:hover,.contact.active {background:var(--input)}
-
 .contact-info {flex:1;min-width:0}
 .contact-name {font-weight:bold;overflow-wrap:anywhere}
 .contact-status {color:var(--muted);font-size:12px;margin-top:5px}
 
-.online-dot {
+.online-dot,.offline-dot {
   width:9px;
   height:9px;
   border-radius:50%;
-  background:#35d58b;
   margin-left:auto;
   flex-shrink:0;
 }
 
-.offline-dot {
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:#87939c;
-  margin-left:auto;
-  flex-shrink:0;
-}
+.online-dot {background:#35d58b}
+.offline-dot {background:#87939c}
 
 .unread {
   background:var(--accent);
@@ -359,7 +351,7 @@ header {
   padding:11px 17px;
   border-radius:10px;
   display:none;
-  z-index:10;
+  z-index:30;
   box-shadow:0 4px 15px #0005;
   max-width:90%;
   text-align:center;
@@ -381,6 +373,114 @@ header {
   border-radius:9px;
 }
 
+/* SETTINGS */
+
+.settings-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:20;
+  background:#0009;
+  padding:16px;
+  align-items:center;
+  justify-content:center;
+}
+
+.settings-panel {
+  width:100%;
+  max-width:600px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 10px 40px #0006;
+}
+
+.settings-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.settings-header h2 {
+  margin:0;
+  font-size:22px;
+}
+
+.settings-close {
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 12px;
+}
+
+.settings-section {
+  border-top:1px solid var(--border);
+  padding:17px 0;
+}
+
+.settings-section h3 {
+  margin:0 0 13px;
+  font-size:16px;
+}
+
+.settings-field {margin-bottom:13px}
+
+.settings-field label {
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:6px;
+}
+
+.settings-field input {
+  width:100%;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:var(--input);
+  color:var(--text);
+  outline:none;
+}
+
+.settings-field input:disabled {opacity:.65}
+
+.settings-action {
+  border:0;
+  border-radius:9px;
+  padding:10px 15px;
+  background:var(--accent);
+  color:#06241e;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.settings-note {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+  margin-top:8px;
+}
+
+.settings-toggle {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:9px 0;
+}
+
+.settings-toggle input {
+  width:19px;
+  height:19px;
+  accent-color:var(--accent);
+}
+
 @media(max-width:650px) {
   .app {position:relative}
   aside {width:100%;border-right:0}
@@ -391,6 +491,8 @@ header {
   #messages {padding:14px}
   .message {max-width:90%}
   .side-header {padding:14px}
+  .settings-overlay {padding:8px}
+  .settings-panel {max-height:95vh;padding:15px}
 }
 </style>
 </head>
@@ -402,7 +504,10 @@ header {
   <div class="side-header">
     <div class="top-row">
       <div class="logo">Chat<span class="accent">Space</span></div>
-      <button class="icon-btn" id="themeButton" title="Change theme">☀️</button>
+      <div style="display:flex;gap:7px">
+        <button class="icon-btn" id="settingsButton" title="Settings">⚙️</button>
+        <button class="icon-btn" id="themeButton" title="Change theme">☀️</button>
+      </div>
     </div>
 
     <div class="profile">
@@ -464,6 +569,130 @@ header {
     <button id="send" type="submit" disabled>➤</button>
   </form>
 </main>
+</div>
+
+<!-- SETTINGS WINDOW -->
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>⚙️ Settings</h2>
+      <button class="settings-close" id="closeSettings">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>👤 Profile</h3>
+
+      <div class="settings-field">
+        <label>Username</label>
+        <input id="settingsUsername" maxlength="20"
+          placeholder="Your username">
+      </div>
+
+      <button class="settings-action" id="saveUsername">Save username</button>
+
+      <p class="settings-note">
+        Your username is visible to other ChatSpace users.
+      </p>
+    </div>
+
+    <div class="settings-section">
+      <h3>📧 Email & Recovery</h3>
+
+      <div class="settings-field">
+        <label>Current email</label>
+        <input id="settingsEmail" type="email" disabled>
+      </div>
+
+      <div class="settings-field">
+        <label>New email address</label>
+        <input id="newEmail" type="email" placeholder="Enter your new email">
+      </div>
+
+      <button class="settings-action" id="changeEmail">Change email</button>
+
+      <div class="settings-field" style="margin-top:18px">
+        <label>Recovery email</label>
+        <input id="recoveryEmail" type="email"
+          placeholder="Enter recovery email">
+      </div>
+
+      <button class="settings-action" id="addRecoveryEmail">
+        Add recovery email
+      </button>
+
+      <p class="settings-note" id="emailStatus"></p>
+    </div>
+
+    <div class="settings-section">
+      <h3>🔐 Security</h3>
+
+      <div class="settings-field">
+        <label>Current password</label>
+        <input id="currentPassword" type="password"
+          autocomplete="current-password">
+      </div>
+
+      <div class="settings-field">
+        <label>New password</label>
+        <input id="newPassword" type="password"
+          autocomplete="new-password">
+      </div>
+
+      <div class="settings-field">
+        <label>Confirm new password</label>
+        <input id="confirmPassword" type="password"
+          autocomplete="new-password">
+      </div>
+
+      <button class="settings-action" id="changePassword">
+        Change password
+      </button>
+
+      <p class="settings-note">
+        Use a strong password that you do not use on other websites.
+      </p>
+    </div>
+
+    <div class="settings-section">
+      <h3>🔔 Notifications</h3>
+
+      <div class="settings-toggle">
+        <span>Browser message notifications</span>
+        <input type="checkbox" id="notificationToggle">
+      </div>
+
+      <p class="settings-note">
+        Browser permission is required for notifications.
+      </p>
+    </div>
+
+    <div class="settings-section">
+      <h3>🎨 Appearance</h3>
+
+      <div class="settings-toggle">
+        <span>Light theme</span>
+        <input type="checkbox" id="lightThemeToggle">
+      </div>
+
+      <p class="settings-note">
+        Your theme preference is saved in this browser.
+      </p>
+    </div>
+
+    <div class="settings-section">
+      <h3>🛡️ Privacy</h3>
+
+      <div class="settings-toggle">
+        <span>Show message notification previews</span>
+        <input type="checkbox" id="previewToggle" checked>
+      </div>
+
+      <p class="settings-note">
+        This setting controls message previews on this browser.
+      </p>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -580,10 +809,7 @@ function renderGeneralHistory() {
   }
 
   generalHistory.forEach(message => {
-    showMessage(
-      message,
-      message.username === currentUser.username
-    );
+    showMessage(message, message.username === currentUser.username);
   });
 }
 
@@ -653,7 +879,6 @@ function openGeneralChat() {
 
   selectedUsername = null;
   typing.textContent = "";
-  unread = {...unread};
 
   chatTitle.textContent = "General Chat";
   chatAvatar.textContent = "C";
@@ -681,9 +906,7 @@ function openPrivateChat(username) {
   chatTitle.textContent = username;
   chatAvatar.textContent = avatarLetter(username);
 
-  const isOnline = onlineList.some(
-    user => user.username === username
-  );
+  const isOnline = onlineList.some(user => user.username === username);
   chatStatus.textContent = isOnline ? "Online" : "Offline";
 
   typing.textContent = "";
@@ -719,10 +942,20 @@ function handlePrivateMessage(message) {
     unread[message.from] = (unread[message.from] || 0) + 1;
     renderContacts();
 
-    if ("Notification" in window &&
+    const notificationsEnabled =
+      localStorage.getItem("chatspace-notifications") === "on";
+
+    if (notificationsEnabled &&
+        "Notification" in window &&
         Notification.permission === "granted") {
+
+      const previewEnabled =
+        localStorage.getItem("chatspace-previews") !== "off";
+
       new Notification("New ChatSpace message", {
-        body: message.from + ": " + message.text
+        body: previewEnabled
+          ? message.from + ": " + message.text
+          : "You received a new message."
       });
     }
   }
@@ -731,8 +964,6 @@ function handlePrivateMessage(message) {
 function handleSentMessage(message) {
   if (!message || typeof message.text !== "string") return;
 
-  // The message is already shown immediately when Send is pressed.
-  // Update its pending status instead of displaying it a second time.
   const index = pendingPrivate.findIndex(item =>
     item.text === message.text &&
     item.username === selectedUsername
@@ -875,7 +1106,6 @@ form.addEventListener("submit", event => {
   event.preventDefault();
 
   const text = input.value.trim();
-
   if (!text) return;
 
   if (!socket?.connected) {
@@ -885,10 +1115,7 @@ form.addEventListener("submit", event => {
 
   if (selectedUsername) {
     const recipient = selectedUsername;
-
     socket.emit("stop typing", {to:recipient});
-
-    // Show the message immediately instead of waiting for the server.
     addPrivateOptimisticMessage(text);
 
     socket.emit("private message", {
@@ -897,7 +1124,6 @@ form.addEventListener("submit", event => {
     });
 
   } else {
-    // General chat messages are displayed when the server broadcasts them.
     socket.emit("chat message", {text});
   }
 
@@ -913,7 +1139,6 @@ input.addEventListener("input", () => {
   if (!selectedUsername || !socket?.connected) return;
 
   socket.emit("typing", {to:selectedUsername});
-
   clearTimeout(typingTimer);
 
   typingTimer = setTimeout(() => {
@@ -951,15 +1176,19 @@ $("logout").addEventListener("click", async () => {
   }
 });
 
-// Theme switch
+// THEME
 const themeButton = $("themeButton");
 
 function applyTheme(theme) {
   document.body.classList.toggle("light", theme === "light");
   themeButton.textContent = theme === "light" ? "🌙" : "☀️";
+
+  const toggle = $("lightThemeToggle");
+  if (toggle) toggle.checked = theme === "light";
 }
 
 let savedTheme = "dark";
+
 try {
   savedTheme = localStorage.getItem("chatspace-theme") || "dark";
 } catch (error) {}
@@ -978,7 +1207,7 @@ themeButton.addEventListener("click", () => {
   } catch (error) {}
 });
 
-// Emoji picker
+// EMOJI PICKER
 const emojiList = [
   "😀","😁","😂","🤣","😊","😍",
   "🥰","😘","😎","😭","😢","😡",
@@ -1007,7 +1236,7 @@ $("emojiButton").addEventListener("click", () => {
     emojiPanel.style.display === "grid" ? "none" : "grid";
 });
 
-// Search messages in the currently visible conversation
+// MESSAGE SEARCH
 const messageSearch = $("messageSearch");
 const messageSearchInput = $("messageSearchInput");
 
@@ -1027,13 +1256,239 @@ messageSearchInput.addEventListener("input", () => {
   });
 });
 
-// Ask for browser notifications only after the user chooses to interact.
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden &&
-      "Notification" in window &&
-      Notification.permission === "default") {
-    // Notifications remain optional; no permission prompt is forced.
+// SETTINGS PANEL
+const settingsOverlay = $("settingsOverlay");
+
+$("settingsButton").addEventListener("click", async () => {
+  settingsOverlay.style.display = "flex";
+  await loadSettings();
+});
+
+$("closeSettings").addEventListener("click", () => {
+  settingsOverlay.style.display = "none";
+});
+
+settingsOverlay.addEventListener("click", event => {
+  if (event.target === settingsOverlay) {
+    settingsOverlay.style.display = "none";
   }
+});
+
+async function settingsRequest(url, data) {
+  const response = await fetch("/api/auth/" + url, {
+    method:"POST",
+    credentials:"same-origin",
+    headers: {
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(data)
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.error || result.message || "Request failed.");
+  }
+
+  return result;
+}
+
+async function loadSettings() {
+  try {
+    const response = await fetch("/api/auth/settings", {
+      credentials:"same-origin"
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.user) {
+      throw new Error(result.error || "Could not load settings.");
+    }
+
+    const user = result.user;
+
+    $("settingsUsername").value = user.username || "";
+    $("settingsEmail").value = user.email || "";
+    $("recoveryEmail").value = user.recovery_email || "";
+
+    $("emailStatus").textContent =
+      "Email: " + (user.email_verified ? "Verified ✓" : "Not verified") +
+      " | Recovery email: " +
+      (user.recovery_email_verified ? "Verified ✓" : "Not verified");
+
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+// CHANGE USERNAME
+$("saveUsername").addEventListener("click", async () => {
+  const username = $("settingsUsername").value.trim();
+
+  try {
+    const result = await settingsRequest("change-username", {
+      username
+    });
+
+    showToast(result.message || "Username updated!");
+
+    currentUser.username = username;
+    myName.textContent = username;
+    myAvatar.textContent = avatarLetter(username);
+
+    setTimeout(() => location.reload(), 900);
+
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+// CHANGE EMAIL
+$("changeEmail").addEventListener("click", async () => {
+  const email = $("newEmail").value.trim();
+
+  if (!email) {
+    showToast("Enter your new email address.");
+    return;
+  }
+
+  try {
+    const result = await settingsRequest("change-email", {email});
+
+    showToast(result.message || "Check your email for verification.");
+    $("newEmail").value = "";
+
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+// ADD RECOVERY EMAIL
+$("addRecoveryEmail").addEventListener("click", async () => {
+  const recoveryEmail = $("recoveryEmail").value.trim();
+
+  if (!recoveryEmail) {
+    showToast("Enter a recovery email address.");
+    return;
+  }
+
+  try {
+    const result = await settingsRequest("add-recovery-email", {
+      recoveryEmail
+    });
+
+    showToast(result.message || "Check your email for verification.");
+
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+// CHANGE PASSWORD
+$("changePassword").addEventListener("click", async () => {
+  const currentPassword = $("currentPassword").value;
+  const newPassword = $("newPassword").value;
+  const confirmPassword = $("confirmPassword").value;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showToast("Please fill in all password fields.");
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    showToast("New password must have at least 8 characters.");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast("New passwords do not match.");
+    return;
+  }
+
+  try {
+    const result = await settingsRequest("change-password", {
+      currentPassword,
+      newPassword
+    });
+
+    showToast(result.message || "Password changed successfully.");
+
+    $("currentPassword").value = "";
+    $("newPassword").value = "";
+    $("confirmPassword").value = "";
+
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+// NOTIFICATIONS
+const notificationToggle = $("notificationToggle");
+
+try {
+  notificationToggle.checked =
+    localStorage.getItem("chatspace-notifications") === "on";
+} catch (error) {}
+
+notificationToggle.addEventListener("change", async () => {
+  if (notificationToggle.checked) {
+    if (!("Notification" in window)) {
+      notificationToggle.checked = false;
+      showToast("This browser does not support notifications.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      notificationToggle.checked = false;
+      showToast("Notification permission was not granted.");
+      return;
+    }
+  }
+
+  try {
+    localStorage.setItem(
+      "chatspace-notifications",
+      notificationToggle.checked ? "on" : "off"
+    );
+  } catch (error) {}
+
+  showToast("Notification preference saved.");
+});
+
+// SETTINGS THEME
+const lightThemeToggle = $("lightThemeToggle");
+
+lightThemeToggle.checked =
+  document.body.classList.contains("light");
+
+lightThemeToggle.addEventListener("change", () => {
+  const theme = lightThemeToggle.checked ? "light" : "dark";
+  applyTheme(theme);
+
+  try {
+    localStorage.setItem("chatspace-theme", theme);
+  } catch (error) {}
+});
+
+// MESSAGE PREVIEW PRIVACY
+const previewToggle = $("previewToggle");
+
+try {
+  previewToggle.checked =
+    localStorage.getItem("chatspace-previews") !== "off";
+} catch (error) {}
+
+previewToggle.addEventListener("change", () => {
+  try {
+    localStorage.setItem(
+      "chatspace-previews",
+      previewToggle.checked ? "on" : "off"
+    );
+  } catch (error) {}
+
+  showToast("Preview preference saved.");
 });
 
 start();
