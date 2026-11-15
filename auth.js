@@ -272,7 +272,7 @@ router.get("/verify", (req, res) => {
     SELECT id FROM users
     WHERE verification_hash = ? AND verification_expires > ?
   `).get(hashToken(token), Date.now());
-
+console.log("LOGIN CHECK - User found:", Boolean(user));
   if (!user) {
     return res.status(400).json({
       error: "Verification link invalid ya expire ho gaya."
@@ -330,7 +330,7 @@ router.post("/login", async (req, res) => {
       password,
       user.password_hash
     );
-
+console.log("LOGIN CHECK - Password matches:", passwordMatches);
     if (!passwordMatches) {
       return res.status(401).json({
         error: "Login details ya password galat hain."
